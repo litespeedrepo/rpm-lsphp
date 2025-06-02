@@ -1,0 +1,4 @@
+name: self-host-arm64-build
+
+on:
+  workflow_dispatch:
