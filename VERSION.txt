@@ -1,0 +1,10 @@
+lsphp=8.4.7
+apcu=5.1.24
+imagick=3.8.0
+ioncube=14.4.0
+msgpack=3.0.0
+memcached=3.2.0
+pear=1.10.15
+redis=6.2.0
+igbinary=3.2.16
+imap=1.0.3

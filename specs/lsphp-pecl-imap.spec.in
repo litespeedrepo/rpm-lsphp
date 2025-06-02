@@ -1,0 +1,140 @@
+# LiteSpeed custom spec for PHP 8.4 IMAP extension
+
+%undefine _strict_symbol_defs_build
+
+%define php_prefix lsphp%%PHP_VER%%
+%define _prefix /usr/local/lsws/%{php_prefix}
+%define _sysconfdir %{_prefix}/etc
+%define _localstatedir %{_prefix}/var
+%define _libdir %{_prefix}/%{_lib}
+%define _bindir %{_prefix}/bin
+%define php_inidir %{_prefix}/etc/php.d
+%define php_extdir %{_libdir}/php/modules
+%define php_incldir %{_prefix}/include/php
+%define __php %{_bindir}/php
+%global ini_name 50-%{pecl_name}.ini
+%global pecl_name imap
+%global php_zend_api %%PHP_API%%
+%global php_core_api %%PHP_API%%
+
+Name:           %{php_prefix}-pecl-%{pecl_name}
+Summary:        IMAP extension
+Version:        %%VERSION%%
+Release:        %%BUILD%%%{?dist}%{!?scl:%{!?nophptag:%(%{__php} -r 'echo ".".PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)}}
+License:        PHP-3.01
+URL:            https://pecl.php.net/package/%{pecl_name}
+Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
+
+BuildRequires:  %{php_prefix}
+BuildRequires:  %{php_prefix}-devel
+BuildRequires:  make
+BuildRequires:  %{?dtsprefix}gcc
+BuildRequires:  %{?php_prefix}-devel
+BuildRequires:  pkgconfig(krb5)
+BuildRequires:  pkgconfig(krb5-gssapi)
+BuildRequires:  krb5-devel
+BuildRequires:  openssl-devel
+BuildRequires:  libc-client-devel
+BuildRequires:  %{?scl_prefix}php-pear
+
+Requires:      %{?php_prefix}(zend-abi) = %{php_zend_api}
+Requires:      %{?php_prefix}(api) = %{php_core_api}
+
+Provides:     %{?php_prefix}-%{pecl_name}               = %{version}
+Provides:     %{?php_prefix}-%{pecl_name}%{?_isa}       = %{version}
+
+Provides:     %{?php_prefix}-pecl(%{pecl_name})         = %{version}
+Provides:     %{?php_prefix}-pecl(%{pecl_name})%{?_isa} = %{version}
+
+Provides:     %{php_prefix}-%{pecl_name}         = 1:%{version}-%{release}
+Provides:     %{php_prefix}-%{pecl_name}%{?_isa} = 1:%{version}-%{release}
+
+%description
+An extension to operate with the IMAP protocol, as well as the NNTP,
+POP3, and local mailbox access methods.
+
+
+%prep
+%setup -q -n imap-%{version}
+
+# Don't install/register tests
+if [ -f package.xml ]; then
+    sed -e 's/role="test"/role="src"/' \
+      %{?_licensedir:-e '/LICENSE/s/role="doc"/role="src"/' } \
+      -i package.xml
+else
+    echo "Skipping package.xml patch (file not found)"
+fi
+
+
+# Sanity check, really often broken
+extver=$(sed -n '/#define PHP_IMAP_VERSION/{s/.* "//;s/".*$//;p}' php_imap.h)
+if test "x${extver}" != "x%{version}%{?prever}"; then
+   : Error: Upstream extension version is ${extver}, expecting %{version}%{?prever}.
+   exit 1
+fi
+
+
+: Create the configuration file
+cat >%{ini_name} << 'EOF'
+; Enable %{pecl_name} extension module
+extension=%{pecl_name}
+EOF
+
+
+%build
+
+%{_bindir}/phpize
+sed -e 's/INSTALL_ROOT/DESTDIR/' -i build/Makefile.global
+
+%configure \
+    --with-php-config=%{_bindir}/php-config \
+    --with-imap \
+    --with-kerberos \
+    --with-imap-ssl \
+    --with-libdir=%{_lib}
+
+%make_build
+
+%install
+
+%make_install INSTALL_ROOT=%{buildroot}
+
+# ini file
+mkdir -p %{buildroot}%{php_inidir}
+cat > %{buildroot}%{php_inidir}/%{ini_name} <<EOF
+; Enable imap extension module
+extension=imap.so
+EOF
+
+%check
+%{__php} --no-php-ini \
+    --define extension_dir=%{buildroot}%{php_extdir} \
+    --define extension=imap.so \
+    --modules | grep '^imap$'
+
+%files
+%license LICENSE
+
+
+%config(noreplace) %{php_inidir}/%{ini_name}
+%{php_extdir}/%{pecl_name}.so
+
+%changelog
+* Tue Oct 15 2024 Remi Collet <remi@remirepo.net> - 1.0.3-1
+- update to 1.0.3
+
+* Tue Sep 24 2024 Remi Collet <remi@remirepo.net> - 1.0.2-4
+- rebuild for 8.4.0RC1
+
+* Thu Jul  4 2024 Remi Collet <remi@remirepo.net> - 1.0.2-3
+- add upstream patch for PHP 8.4
+
+* Thu Jan  4 2024 Remi Collet <remi@remirepo.net> - 1.0.2-2
+- add upstream patch to report extension version
+
+* Thu Jan  4 2024 Remi Collet <remi@remirepo.net> - 1.0.2-1
+- update to 1.0.2
+
+* Tue Dec 19 2023 Remi Collet <remi@remirepo.net> - 1.0.0-1
+- initial package for version 1.0.0 (PHP 8.4)
