@@ -205,25 +205,25 @@ prepare_source()
     echoB "${FPACE} - Prepare source"
     case "${product}" in
         *-pecl-*)
-            echoG ' - Match pecl'
+            echoG "${EPACE}- Match pecl"
             source_url="https://pecl.php.net/get/${PHP_EXTENSION}-${version}.tgz"
             source="${PHP_EXTENSION}-${version}.tgz"
         ;;  
         *-pear|pear)
-            echoG ' - Match pear'
+            echoG "${EPACE}- Match pear"
             source_url="http://download.pear.php.net/package/PEAR-${version}.tgz"
             source="PEAR-${version}.tgz"
         ;;
         *-ioncube|ioncube)
-            echoG ' - Match ioncube'
+            echoG "${EPACE}- Match ioncube"
         ;;         
         lsphp*)
-            echoG ' - Match lsphp'
+            echoG "${EPACE}- Match lsphp"
             source_url="http://us2.php.net/distributions/php-$version.tar.gz"
             source="php-$version.tar.gz"
         ;;
         *)
-            echoG ' - Match *'
+            echoG "${EPACE}- Match *"
             source_url="https://pecl.php.net/get/${PHP_EXTENSION}-${version}.tgz"
             source="${PHP_EXTENSION}-${version}.tgz"
         ;;
@@ -241,7 +241,7 @@ prepare_source()
             wget --no-check-certificate -O ${BUILD_SOURCES}/${source} ${source_url}
         fi    
     fi
-    echoG "SOURCE: ${BUILD_SOURCES}/${source}"
+    echoG "${EPACE}SOURCE: ${BUILD_SOURCES}/${source}"
 }
 
 build_rpms()
@@ -253,7 +253,7 @@ build_rpms()
     fi
 
     echoB "${FPACE} - Build rpm source package"
-    echoG "SPEC Location: ${BUILD_SPECS}/${PRODUCT_WITH_VER}.spec"
+    echoG "${EPACE}SPEC Location: ${BUILD_SPECS}/${PRODUCT_WITH_VER}.spec"
     rpmbuild --nodeps -bs ${BUILD_SPECS}/${PRODUCT_WITH_VER}.spec  \
       --define "_topdir ${BUILD_DIR}" \
       --define "dist ${DIST_TAG}"
@@ -289,7 +289,17 @@ list_packages()
 }
 
 upload_to_server(){
-    echo 'test'
+    cd ${RESULT_DIR}/${platforms}
+    REP_LOC='/var/www/html'
+    echoG "- Uploading rpm to dev - distribution ${EPEL_TAG}"
+    #eval `ssh-agent -s`
+    #echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
+    if [ ${revision} -gt 1 ]; then
+        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/update/${archs}/"
+    else
+        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/"
+    fi
+    rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}*.rpm -e ssh root@${target_server}:${TARGET_FD}
 }
 
 gen_dev_release(){
