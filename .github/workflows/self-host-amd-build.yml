@@ -55,6 +55,6 @@ jobs:
         run: |
             bash build.sh ${{ matrix.package }} ${{ matrix.distro }} x86_64 --push
         env:
-          #BUILD_KEY: ${{ secrets.BUILD_KEY }}
+          BUILD_KEY: ${{ secrets.BUILD_KEY }}
           version: ${{ inputs.version }}
           revision: ${{ inputs.revision }}
