@@ -266,10 +266,10 @@ build_rpms()
     for platform in ${platforms};
     do
         if [ "${EPEL_TAG}" = '10' ]; then
-            runuser -u builder -- mock -r ${platform} --copyin compiled/10/ccache /usr/bin/ccache
+            builder -- mock -r ${platform} --copyin compiled/10/ccache /usr/bin/ccache
         fi
         # Use mock -v to enable debug or mock --quiet to silence 
-        runuser -u builder -- mock --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
+        builder -- mock --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
         if [ ${?} != 0 ]; then
             echo 'rpm build package has issue; exit!'; exit 1
         fi
