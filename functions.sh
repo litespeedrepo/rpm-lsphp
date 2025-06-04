@@ -261,7 +261,7 @@ build_rpms()
         echoR 'rpm source package has issue; exit!'; exit 1
     fi
     echoB "${FPACE} - Build rpm package with mock"
-    [[ "$product" == *-pecl-* ]] && DIST_TAG+=".${PHP_DOTV}"
+    #[[ "$product" == *-pecl-* ]] && DIST_TAG+=".${PHP_DOTV}"
     SRPM=${BUILD_SRPMS}/${PRODUCT_WITH_VER}${DIST_TAG}.src.rpm
     echoG "${EPACE}SRPM: ${SRPM}"
 
