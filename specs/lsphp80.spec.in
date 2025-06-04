@@ -1,0 +1,1487 @@
+# Lite Speed spec file for lsphp 8.0
+
+%global lsapiver %%LSAPIVER%%
+%global phpversion %%VERSION%%
+
+%define _prefix /usr/local/lsws/lsphp80
+%define _bindir %{_prefix}/bin
+%define _libdir %{_prefix}/%{_lib}
+%define _sysconfdir %{_prefix}/etc
+%define _datadir %{_prefix}/share
+%define _localstatedir /var
+%define _includedir %{_prefix}/include
+%define _docdir %{_prefix}/share/doc
+%define _mandir %{_prefix}/man
+%define php_inidir %{_prefix}/etc/php.d
+%define php_extdir %{_libdir}/php/modules
+%define php_incldir %{_includedir}/php
+%define pecl_xmldir %{_prefix}/share/pear/.pkgxml
+%define pecl_testdir %{_prefix}/var/pear
+%define pecl_docdir %{_prefix}/share/doc
+%global __php %{_bindir}/php
+%global __pecl %{_bindir}/pecl
+
+# API/ABI check
+%global apiver      20200930
+%global zendver     20200930
+%global pdover      20170320
+# Extension version
+%global fileinfover 1.0.5
+%global oci8ver     3.0.1
+%global zipver      1.19.5
+
+# Use for first build of PHP (before pecl/zip and pecl/jsonc)
+%global php_bootstrap   0
+
+# Adds -z now to the linker flags
+%global _hardened_build 1
+
+# version used for php embedded library soname
+%global embed_version 8.0
+
+%global mysql_sock %(mysql_config --socket 2>/dev/null || echo /var/lib/mysql/mysql.sock)
+
+%global oraclever 21.7
+%global oraclelib 21.1
+
+# Build for LiteSpeed Web Server (LSAPI)
+%global with_lsws     1
+
+# Regression tests take a long time, you can skip 'em with this
+%if %{php_bootstrap}
+%global runselftest 0
+%else
+%{!?runselftest: %global runselftest 0}
+%endif
+
+# Use the arch-specific mysql_config binary to avoid mismatch with the
+# arch detection heuristic used by bindir/mysql_config.
+%global mysql_config /usr/%{_lib}/mysql/mysql_config
+
+# Optional components; pass "--with mssql" etc to rpmbuild.
+%global with_oci8     0
+
+%if 0%{?fedora} >= 27 || 0%{?rhel} >= 8
+%global with_libpcre  1
+%else
+%global with_libpcre  0
+%endif
+
+%if 0%{?rhel} > 6
+%global with_imap      1
+%else
+%global with_imap      0
+%endif
+%global with_interbase 0
+#with_freetds PDO driver Microsoft SQL Server and Sybase databases
+%global with_freetds   0
+%global with_mssql     0
+
+%if 0%{?rhel} >= 8
+%global with_tidy      1
+%else
+%global with_tidy      1
+%endif
+
+%global with_sqlite3   1
+
+%global with_libedit   1
+%global with_enchant   1
+%global with_recode    0
+
+%if 0%{?__isa_bits:1}
+%global isasuffix -%{__isa_bits}
+%else
+%global isasuffix %nil
+%endif
+
+%global with_dtrace  1
+
+%if 0%{?rhel} >= 8
+%global with_libgd   1
+%global with_libzip  1
+%global with_zip     1
+%else
+%global with_libgd   0
+%global with_libzip  0
+%global with_zip     0
+%endif
+
+
+# systemd to manage the service
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%global with_systemd 1
+%else
+%global with_systemd 0
+%endif
+%global with_httpd2410 0
+
+
+%if 0%{?fedora} < 18 && 0%{?rhel} < 7
+%global db_devel  db4-devel
+%else
+%global db_devel  libdb-devel
+%endif
+
+
+Summary: PHP scripting language for creating dynamic web sites
+Name: lsphp80
+Version: %{phpversion}
+Release: %%BUILD%%%{?dist}
+# All files licensed under PHP version 3.01, except
+# Zend is licensed under Zend
+# TSRM is licensed under BSD
+License: PHP and Zend and BSD
+Group: Development/Languages
+URL: http://www.php.net/
+
+Source0: php-%{version}.tar.gz
+Source1: php.conf
+Source2: php80.ini
+Source9: php.modconf
+Source10: php.conf2
+#Source20: http://litespeedtech.com/packages/lsapi/php-litespeed-%{lsapiver}.tgz
+# Configuration files for some extensions
+Source50: 10-opcache.ini
+Source51: opcache-default.blacklist
+Source52: 20-oci8.ini
+
+# Build fixes
+Patch1: php-7.4.0-httpd.patch
+Patch5: php-7.2.0-includedir.patch
+Patch6: php-8.0.0-embed.patch
+Patch8: php-7.4.0-libdb.patch
+# get rid of deprecated functions from 8.1
+#Patch9: php-8.0.6-deprecated.patch
+# RHEL backports
+Patch10: php-7.0.7-curl.patch
+
+# Functional changes
+# Use system nikic/php-parser
+Patch41: php-8.0.19-parser.patch
+# use system tzdata
+Patch42: php-8.0.10-systzdata-v21.patch
+# See http://bugs.php.net/53436
+Patch43: php-7.4.0-phpize.patch
+# Use -lldap_r for OpenLDAP
+Patch45: php-7.4.0-ldap_r.patch
+# Ignore unsupported "threads" option on password_hash
+Patch46: php-8.0.7-argon2.patch
+# drop "Configure command" from phpinfo output
+# and only use gcc (instead of full version)
+Patch47: php-8.0.0-phpinfo.patch
+# add sha256 / sha512 security protocol, from 8.1
+Patch48: php-8.0.10-snmp-sha.patch
+# switch phar to use sha256 signature by default, from 8.1
+# implement openssl_256 and openssl_512 for phar signatures, from 8.1
+Patch49: php-8.0.10-phar-sha.patch
+# compatibility with OpenSSL 3.0, from 8.1
+Patch50: php-8.0.21-openssl3.patch
+# use system libxcrypt, from 8.1
+Patch51: php-8.0.13-crypt.patch
+
+# RC Patch
+Patch91: php-7.2.0-oci8conf.patch
+
+# Upstream fixes (100+)
+
+# Security fixes (200+)
+
+# Fixes for tests (300+)
+# Factory is droped from system tzdata
+Patch300: php-7.4.0-datetests.patch
+
+# WIP
+
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildRequires: autoconf, automake
+BuildRequires: re2c
+BuildRequires: wget
+BuildRequires: bzip2-devel, curl-devel >= 7.9, %{db_devel}
+BuildRequires: pam-devel
+BuildRequires: libstdc++-devel, openssl-devel
+%if %{with_sqlite3}
+# For Sqlite3 extension
+BuildRequires: sqlite-devel >= 3.6.0
+%else
+BuildRequires: sqlite-devel >= 3.0.0
+%endif
+BuildRequires: zlib-devel, smtpdaemon, libedit-devel
+%if %{with_libpcre}
+#BuildRequires: pcre2-devel
+BuildRequires: pcre2-devel >= 10.30
+%else
+Provides:      bundled(pcre2) = 10.32
+%endif
+BuildRequires: bzip2, perl, libtool >= 1.4.3, gcc-c++
+BuildRequires: libtool-ltdl-devel
+%if %{with_dtrace}
+BuildRequires: systemtap-sdt-devel
+%endif
+BuildRequires: libargon2-devel
+BuildRequires: bison
+
+#include all cli package files to the main package
+#***###***package cli
+#Group: Development/Languages
+#Summary: Command-line interface for PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+Provides: lsphp80-cgi = %{version}-%{release}, lsphp80-cgi%{?_isa} = %{version}-%{release}
+Provides: lsphp80-pcntl, lsphp80-pcntl%{?_isa}
+Provides: lsphp80-readline, lsphp80-readline%{?_isa}
+#***###***description cli
+#The lsphp80-cli package contains the command-line interface
+#executing PHP scripts, /usr/bin/php, and the CGI interface.
+
+#***###***if 0%{?fedora} < 20 && 0%{?rhel} < 7
+# Don't provides extensions, which are not shared library, as .so
+#***###***{?filter_provides_in: %filter_provides_in %{_libdir}/php/modules/.*\.so$}
+#***###***{?filter_provides_in: %filter_provides_in %{_httpd_moddir}/.*\.so$}
+#***###***{?filter_setup}
+#***###***endif
+
+
+%description
+PHP is an HTML-embedded scripting language. PHP attempts to make it
+easy for developers to write dynamically generated web pages. PHP also
+offers built-in database integration for several commercial and
+non-commercial database management systems, so writing a
+database-enabled webpage with PHP is fairly simple. The most common
+use of PHP coding is probably as a replacement for CGI scripts.
+
+This package contains the module (often referred to as mod_php)
+which adds support for the PHP language to system Apache HTTP Server.
+
+
+
+
+%package dbg
+Group: Development/Languages
+Summary: The interactive PHP debugger
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+
+%description dbg
+The lsphp80-dbg package contains the interactive PHP debugger.
+
+
+%package common
+Group: Development/Languages
+Summary: Common files for PHP
+# All files licensed under PHP version 3.01, except
+# fileinfo is licensed under PHP version 3.0
+# regex, libmagic are licensed under BSD
+# main/snprintf.c, main/spprintf.c and main/rfc1867.c are ASL 1.0
+License: PHP and BSD and ASL 1.0
+# ABI/API check - Arch specific
+Provides: lsphp80(api) = %{apiver}%{isasuffix}
+Provides: lsphp80(zend-abi) = %{zendver}%{isasuffix}
+Provides: lsphp80(language) = %{version}
+Provides: lsphp80(language)%{?_isa} = %{version}
+# Provides for all builtin/shared modules:
+Provides: lsphp80-bz2, lsphp80-bz2%{?_isa}
+Provides: lsphp80-calendar, lsphp80-calendar%{?_isa}
+Provides: lsphp80-core = %{version}, lsphp80-core%{?_isa} = %{version}
+Provides: lsphp80-ctype, lsphp80-ctype%{?_isa}
+Provides: lsphp80-curl, lsphp80-curl%{?_isa}
+Provides: lsphp80-date, lsphp80-date%{?_isa}
+Provides: lsphp80-ereg, lsphp80-ereg%{?_isa}
+Provides: lsphp80-exif, lsphp80-exif%{?_isa}
+Provides: lsphp80-fileinfo, lsphp80-fileinfo%{?_isa}
+Provides: lsphp80-filter, lsphp80-filter%{?_isa}
+Provides: lsphp80-ftp, lsphp80-ftp%{?_isa}
+Provides: lsphp80-gettext, lsphp80-gettext%{?_isa}
+Provides: lsphp80-hash, lsphp80-hash%{?_isa}
+Provides: lsphp80-mhash = %{version}, lsphp80-mhash%{?_isa} = %{version}
+Provides: lsphp80-iconv, lsphp80-iconv%{?_isa}
+Provides: lsphp80-libxml, lsphp80-libxml%{?_isa}
+Provides: lsphp80-openssl, lsphp80-openssl%{?_isa}
+Provides: lsphp80-phar, lsphp80-phar%{?_isa}
+Provides: lsphp80-pcre, lsphp80-pcre%{?_isa}
+Provides: lsphp80-reflection, lsphp80-reflection%{?_isa}
+Provides: lsphp80-session, lsphp80-session%{?_isa}
+Provides: lsphp80-sockets, lsphp80-sockets%{?_isa}
+Provides: lsphp80-spl, lsphp80-spl%{?_isa}
+Provides: lsphp80-standard = %{version}, lsphp80-standard%{?_isa} = %{version}
+Provides: lsphp80-tokenizer, lsphp80-tokenizer%{?_isa}
+Provides: lsphp80-zip, lsphp80-zip%{?_isa}
+Provides: lsphp80-zlib, lsphp80-zlib%{?_isa}
+Provides: lsphp80-json, lsphp80-json%{?_isa}
+Provides: lsphp80-libsodium, lsphp80-libsodium%{?_isa}
+
+%description common
+The lsphp80-common package contains files used by both the php
+package and the lsphp80-cli package.
+
+%package devel
+Group: Development/Libraries
+Summary: Files needed for building PHP extensions
+Requires: autoconf, automake
+%if %{with_libpcre}
+Requires: pcre-devel%{?_isa} >= 8.20
+%endif
+
+%description devel
+The lsphp80-devel package contains the files needed for building PHP
+extensions. If you need to compile your own PHP extensions, you will
+need to install this package.
+
+%package opcache
+Summary:   The Zend OPcache
+Group:     Development/Languages
+License:   PHP
+Requires:  lsphp80-common%{?_isa} = %{version}-%{release}
+Provides:  lsphp80-pecl-zendopcache = %{version}
+Provides:  lsphp80-pecl-zendopcache%{?_isa} = %{version}
+Provides:  lsphp80-pecl(opcache) = %{version}
+Provides:  lsphp80-pecl(opcache)%{?_isa} = %{version}
+
+%description opcache
+The Zend OPcache provides faster PHP execution through opcode caching and
+optimization. It improves PHP performance by storing precompiled script
+bytecode in the shared memory. This eliminates the stages of reading code from
+the disk and compiling it on future access. In addition, it applies a few
+bytecode optimization patterns that make code execution faster.
+
+%if %{with_imap}
+%package imap
+Summary: A module for PHP applications that use IMAP
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+#BuildRequires: krb5-devel, openssl-devel, libc-client-devel
+BuildRequires: pkgconfig(krb5)
+BuildRequires: pkgconfig(krb5-gssapi)
+#BuildRequires: krb5-devel, krb5-libs
+#BuildRequires: openssl-devel >= 1.0.1
+BuildRequires: libc-client-devel
+
+%description imap
+The lsphp80-imap module will add IMAP (Internet Message Access Protocol)
+support to PHP. IMAP is a protocol for retrieving and uploading e-mail
+messages on mail servers. PHP is an HTML-embedded scripting language.
+%endif
+
+%package ldap
+Summary: A module for PHP applications that use LDAP
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: cyrus-sasl-devel, openldap-devel, openssl-devel
+
+%description ldap
+The lsphp80-ldap package adds Lightweight Directory Access Protocol (LDAP)
+support to PHP. LDAP is a set of protocols for accessing directory
+services over the Internet. PHP is an HTML-embedded scripting
+language.
+
+%package pdo
+Summary: A database access abstraction module for PHP applications
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+# ABI/API check - Arch specific
+Provides: lsphp80-pdo-abi = %{pdover}%{isasuffix}
+Provides: lsphp80(pdo-abi) = %{pdover}%{isasuffix}
+%if %{with_sqlite3}
+Provides: lsphp80-sqlite3, lsphp80-sqlite3%{?_isa}
+%endif
+Provides: lsphp80-pdo_sqlite, lsphp80-pdo_sqlite%{?_isa}
+
+%description pdo
+The lsphp80-pdo package contains a dynamic shared object that will add
+a database access abstraction layer to PHP.  This module provides
+a common interface for accessing MySQL, PostgreSQL or other
+databases.
+
+
+%package mysqlnd
+Summary: A module for PHP applications that use MySQL databases
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp80_database
+Provides: lsphp80-mysqli = %{version}-%{release}
+Provides: lsphp80-mysqli%{?_isa} = %{version}-%{release}
+Provides: lsphp80-pdo_mysql, lsphp80-pdo_mysql%{?_isa}
+Obsoletes: lsphp80-mysqlnd
+
+%description mysqlnd
+The lsphp80-mysqlnd package contains a dynamic shared object that will add
+MySQL database support to PHP. MySQL is an object-relational database
+management system. PHP is an HTML-embeddable scripting language. If
+you need MySQL support for PHP applications, you will need to install
+this package and the php package.
+
+This package use the MySQL Native Driver
+
+%package pgsql
+Summary: A PostgreSQL database module for PHP
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp80_database
+Provides: lsphp80-pdo_pgsql, lsphp80-pdo_pgsql%{?_isa}
+BuildRequires: krb5-devel, openssl-devel, postgresql-devel
+
+%description pgsql
+The lsphp80-pgsql package add PostgreSQL database support to PHP.
+PostgreSQL is an object-relational database management
+system that supports almost all SQL constructs. PHP is an
+HTML-embedded scripting language. If you need back-end support for
+PostgreSQL, you should install this package in addition to the main
+php package.
+
+%package process
+Summary: Modules for PHP script using system process interfaces
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+Provides: lsphp80-posix, lsphp80-posix%{?_isa}
+Provides: lsphp80-shmop, lsphp80-shmop%{?_isa}
+Provides: lsphp80-sysvsem, lsphp80-sysvsem%{?_isa}
+Provides: lsphp80-sysvshm, lsphp80-sysvshm%{?_isa}
+Provides: lsphp80-sysvmsg, lsphp80-sysvmsg%{?_isa}
+
+%description process
+The lsphp80-process package contains dynamic shared objects which add
+support to PHP using system interfaces for inter-process
+communication.
+
+%package odbc
+Summary: A module for PHP applications that use ODBC databases
+Group: Development/Languages
+# All files licensed under PHP version 3.01, except
+# pdo_odbc is licensed under PHP version 3.0
+License: PHP
+Requires: lsphp80-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp80_database
+Provides: lsphp80-pdo_odbc, lsphp80-pdo_odbc%{?_isa}
+BuildRequires: unixODBC-devel
+
+%description odbc
+The lsphp80-odbc package contains a dynamic shared object that will add
+database support through ODBC to PHP. ODBC is an open specification
+which provides a consistent API for developers to use for accessing
+data sources (which are often, but not always, databases). PHP is an
+HTML-embeddable scripting language. If you need ODBC support for PHP
+applications, you will need to install this package and the php
+package.
+
+%package soap
+Summary: A module for PHP applications that use the SOAP protocol
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: libxml2-devel
+
+%description soap
+The lsphp80-soap package contains a dynamic shared object that will add
+support to PHP for using the SOAP web services protocol.
+
+%if %{with_interbase}
+%package interbase
+Summary: A module for PHP applications that use Interbase/Firebird databases
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+BuildRequires:  firebird-devel
+Requires: lsphp80-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp80_database
+Provides: lsphp80-firebird, lsphp80-firebird%{?_isa}
+Provides: lsphp80-pdo_firebird, lsphp80-pdo_firebird%{?_isa}
+
+%description interbase
+The lsphp80-interbase package contains a dynamic shared object that will add
+database support through Interbase/Firebird to PHP.
+
+InterBase is the name of the closed-source variant of this RDBMS that was
+developed by Borland/Inprise.
+
+Firebird is a commercially independent project of C and C++ programmers,
+technical advisors and supporters developing and enhancing a multi-platform
+relational database management system based on the source code released by
+Inprise Corp (now known as Borland Software Corp) under the InterBase Public
+License.
+%endif
+
+%if %{with_oci8}
+%package oci8
+Summary:        A module for PHP applications that use OCI8 databases
+Group:          Development/Languages
+# All files licensed under PHP version 3.01
+License:        PHP
+BuildRequires:  oracle-instantclient-devel >= %{oraclever}
+Requires:       lsphp80-pdo%{?_isa} = %{version}-%{release}
+Provides:       lsphp80_database
+Provides:       lsphp80-pdo_oci, lsphp80-pdo_oci%{?_isa}
+Obsoletes:      lsphp80-pecl-oci8 <  %{oci8ver}
+Conflicts:      lsphp80-pecl-oci8 >= %{oci8ver}
+Provides:       lsphp80-pecl(oci8) = %{oci8ver}, lsphp80-pecl(oci8)%{?_isa} = %{oci8ver}
+# Should requires libclntsh.so.12.1, but it's not provided by Oracle RPM.
+AutoReq:        0
+
+%description oci8
+The lsphp80-oci8 packages provides the OCI8 extension version %{oci8ver}
+and the PDO driver to access Oracle Database.
+
+The extension is linked with Oracle client libraries %{oraclever}
+(Oracle Instant Client).  For details, see Oracle\'s note
+\"Oracle Client / Server Interoperability Support\" (ID 207303.1).
+
+You must install libclntsh.so.%{oraclever} to use this package, provided
+in the database installation, or in the free Oracle Instant Client
+available from Oracle.
+
+Notice:
+- lsphp80-oci8 provides oci8 and pdo_oci extensions from php sources.
+- lsphp80-pecl-oci8 only provides oci8 extension.
+
+Documentation is at http://php.net/oci8 and http://php.net/pdo_oci
+%endif
+
+%package snmp
+Summary: A module for PHP applications that query SNMP-managed devices
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}, net-snmp
+BuildRequires: net-snmp-devel
+
+%description snmp
+The lsphp80-snmp package contains a dynamic shared object that will add
+support for querying SNMP devices to PHP.  PHP is an HTML-embeddable
+scripting language. If you need SNMP support for PHP applications, you
+will need to install this package and the php package.
+
+%package xml
+Summary: A module for PHP applications which use XML
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+Provides: lsphp80-dom, lsphp80-dom%{?_isa}
+Provides: lsphp80-domxml, lsphp80-domxml%{?_isa}
+Provides: lsphp80-simplexml, lsphp80-simplexml%{?_isa}
+#Provides: lsphp80-wddx, lsphp80-wddx%{?_isa}
+Provides: lsphp80-xmlreader, lsphp80-xmlreader%{?_isa}
+Provides: lsphp80-xmlwriter, lsphp80-xmlwriter%{?_isa}
+Provides: lsphp80-xsl, lsphp80-xsl%{?_isa}
+BuildRequires: libxslt-devel >= 1.0.18-1, libxml2-devel >= 2.4.14-1
+
+%description xml
+The lsphp80-xml package contains dynamic shared objects which add support
+to PHP for manipulating XML documents using the DOM tree,
+and performing XSL transformations on XML documents.
+
+%package mbstring
+Summary: A module for PHP applications which need multi-byte string handling
+Group: Development/Languages
+# All files licensed under PHP version 3.01, except
+# libmbfl is licensed under LGPLv2
+# onigurama is licensed under BSD
+# ucgendat is licensed under OpenLDAP
+License: PHP and LGPLv2 and BSD and OpenLDAP
+#BuildRequires: pkgconfig(oniguruma) >= 6.8
+BuildRequires: oniguruma-devel
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+Requires: oniguruma
+
+%description mbstring
+The lsphp80-mbstring package contains a dynamic shared object that will add
+support for multi-byte string handling to PHP.
+
+%package gd
+Summary: A module for PHP applications for using the gd graphics library
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+%if %{with_libgd}
+License: PHP
+%else
+# bundled libgd is licensed under BSD
+License: PHP and BSD
+%endif
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+# Required to build the bundled GD library
+BuildRequires: libjpeg-devel, libpng-devel, freetype-devel
+BuildRequires: libXpm-devel, libwebp-devel
+%if %{with_libgd}
+BuildRequires: gd-devel
+%endif
+
+%description gd
+The lsphp80-gd package contains a dynamic shared object that will add
+support for using the gd graphics library to PHP.
+
+%package bcmath
+Summary: A module for PHP applications for using the bcmath library
+Group: Development/Languages
+# All files licensed under PHP version 3.01, except
+# libbcmath is licensed under LGPLv2+
+License: PHP and LGPLv2+
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+
+%description bcmath
+The lsphp80-bcmath package contains a dynamic shared object that will add
+support for using the bcmath library to PHP.
+
+%package gmp
+Summary: A module for PHP applications for using the GNU MP library
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+BuildRequires: gmp-devel
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+
+%description gmp
+These functions allow you to work with arbitrary-length integers
+using the GNU MP library.
+
+%package dba
+Summary: A database abstraction layer module for PHP applications
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+BuildRequires: %{db_devel}, tokyocabinet-devel
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+
+%description dba
+The lsphp80-dba package contains a dynamic shared object that will add
+support for using the DBA database abstraction layer to PHP.
+
+%if %{with_tidy}
+%package tidy
+Summary: Standard PHP module provides tidy library support
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: libtidy-devel
+
+%description tidy
+The lsphp80-tidy package contains a dynamic shared object that will add
+support for using the tidy library to PHP.
+%endif
+
+%if %{with_mssql}
+%package mssql
+Summary: MSSQL database module for PHP
+Group: Development/Languages
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-pdo%{?_isa} = %{version}-%{release}
+BuildRequires: freetds-devel
+Provides: lsphp80-pdo_dblib, lsphp80-pdo_dblib%{?_isa}
+
+%description mssql
+The lsphp80-mssql package contains a dynamic shared object that will
+add MSSQL database support to PHP.  It uses the TDS (Tabular
+DataStream) protocol through the freetds library, hence any
+database server which supports TDS can be accessed.
+%endif
+
+%package pspell
+Summary: A module for PHP applications for using pspell interfaces
+Group: System Environment/Libraries
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: aspell-devel >= 0.50.0
+
+%description pspell
+The lsphp80-pspell package contains a dynamic shared object that will add
+support for using the pspell library to PHP.
+
+%if %{with_recode}
+%package recode
+Summary: A module for PHP applications for using the recode library
+Group: System Environment/Libraries
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: recode-devel
+
+%description recode
+The lsphp80-recode package contains a dynamic shared object that will add
+support for using the recode library to PHP.
+%endif
+
+%package intl
+Summary: Internationalization extension for PHP applications
+Group: System Environment/Libraries
+# All files licensed under PHP version 3.01
+License: PHP
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: libicu-devel >= 4.0
+
+%description intl
+The lsphp80-intl package contains a dynamic shared object that will add
+support for using the ICU library to PHP.
+
+%if %{with_enchant}
+%package enchant
+Summary: Enchant spelling extension for PHP applications
+# All files licensed under PHP version 3.0
+License: PHP
+Group: System Environment/Libraries
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+BuildRequires: enchant-devel >= 1.2.4
+
+%description enchant
+The lsphp80-enchant package contains a dynamic shared object that will add
+support for using the enchant library to PHP.
+%endif
+
+%if %{with_zip}
+%package zip
+Summary: ZIP archive management extension for PHP
+# All files licensed under PHP version 3.0.1
+License: PHP
+Group: System Environment/Libraries
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+%if %{with_libzip}
+# 0.11.1 required, but 1.0.1 is bundled
+#BuildRequires: pkgconfig
+BuildRequires: pkgconfig(libzip) >= 0.11
+%endif
+
+%description zip
+The lsphp80-zip package provides an extension that will add
+support for ZIP archive management to PHP.
+%endif
+
+%package sodium
+Summary: Wrapper for the Sodium cryptographic library
+# All files licensed under PHP version 3.0.1
+License: PHP
+Group: System Environment/Libraries
+# Ensure libsodium-last is used (upstream 1.0.9)
+BuildRequires:  pkgconfig(libsodium) >= 1.0.13
+Requires: lsphp80-common%{?_isa} = %{version}-%{release}
+
+%description sodium
+The php-sodium package provides a simple,
+low-level PHP extension for the libsodium cryptographic library.
+
+%prep
+: Building %{name}-%{version}pacth-%{release} with systemd=%{with_systemd} imap=%{with_imap} interbase=%{with_interbase} freetds=%{with_freetds} mssql=%{with_mssql} sqlite3=%{with_sqlite3} tidy=%{with_tidy} zip=%{with_zip}
+
+%setup -q -n php-%{version}
+
+# No Patch required for litespeed php7
+rm -rf litespeed
+rm -rf *.tgz
+wget http://www.litespeedtech.com/packages/lsapi/php-litespeed-%{lsapiver}.tgz
+tar -zxf php-litespeed-%{lsapiver}.tgz
+cp -f litespeed-%{lsapiver}/*.c litespeed-%{lsapiver}/*.h sapi/litespeed
+
+#upstream requires  gmp version 4.2 or greater but centos 5 system has 4.1 version only gmp-devel,only use system default for now.
+#This is a patch for CentOS 5 build
+%if 0%{?rhel} <= 5
+wget http://192.168.0.93/downloads/lsphp80/gmpconfig.m4 -O ext/gmp/config.m4
+%endif
+
+
+%patch1 -p1 -b .mpmcheck
+%patch5 -p1 -b .includedir
+%patch6 -p1 -b .embed
+%patch8 -p1 -b .libdb
+#%patch9 -p1 -b .deprecated
+%if 0%{?rhel}
+%patch10 -p1 -b .curltls
+%endif
+
+%patch41 -p1 -b .syslib
+%if 0%{?fedora} >= 31 || 0%{?rhel} >= 6
+%patch42 -p1 -b .systzdata
+%endif
+%patch43 -p1 -b .headers
+%patch45 -p1 -b .ldap_r
+%patch46 -p1 -b .argon2
+%patch47 -p1 -b .phpinfo
+%patch48 -p1 -b .sha
+%patch49 -p1 -b .pharsha
+%if 0%{?fedora} >= 36 || 0%{?rhel} >= 9
+%patch50 -p1 -b .openssl3
+rm ext/openssl/tests/p12_with_extra_certs.p12
+%endif
+%patch51 -p1 -b .libxcrypt
+
+%patch91 -p1 -b .remi-oci8
+
+# upstream patches
+
+# security patches
+
+# Fixes for tests related to tzdata
+%if 0%{?fedora} >= 29 || 0%{?rhel} >= 6
+%patch300 -p1 -b .datetests
+%endif
+
+# WIP patch
+
+
+# Prevent %%doc confusion over LICENSE files
+cp Zend/LICENSE Zend/ZEND_LICENSE
+cp TSRM/LICENSE TSRM_LICENSE
+#%if ! %{with_libgd}
+#cp ext/gd/libgd/README libgd_README
+#cp ext/gd/libgd/COPYING libgd_COPYING
+#%endif
+cp sapi/fpm/LICENSE fpm_LICENSE
+cp ext/mbstring/libmbfl/LICENSE libmbfl_LICENSE
+cp ext/fileinfo/libmagic/LICENSE libmagic_LICENSE
+#cp ext/bcmath/libbcmath/LICENSE libbcmath_LICENSE
+cp ext/date/lib/LICENSE.rst timelib_LICENSE
+
+# Multiple builds for multiple SAPIs
+mkdir \
+    build-apache \
+    build-cgi
+
+# ----- Manage known as failed test -------
+# affected by systzdata patch
+rm ext/date/tests/timezone_location_get.phpt
+rm ext/date/tests/timezone_version_get.phpt
+rm ext/date/tests/timezone_version_get_basic1.phpt
+# fails sometime
+rm ext/sockets/tests/mcast_ipv?_recv.phpt
+# Should be skipped but fails sometime
+rm ext/standard/tests/file/file_get_contents_error001.phpt
+# cause stack exhausion
+rm Zend/tests/bug54268.phpt
+rm Zend/tests/bug68412.phpt
+
+# Safety check for API version change.
+pver=$(sed -n '/#define PHP_VERSION /{s/.* "//;s/".*$//;p}' main/php_version.h)
+if test "x${pver}" != "x%{version}"; then
+   : Error: Upstream PHP version is now ${pver}, expecting %{version}.
+   : Update the version/rcver macros and rebuild.
+   exit 1
+fi
+
+vapi=$(sed -n '/#define PHP_API_VERSION/{s/.* //;p}' main/php.h)
+if test "x${vapi}" != "x%{apiver}"; then
+   : Error: Upstream API version is now ${vapi}, expecting %{apiver}.
+   : Update the apiver macro and rebuild.
+   exit 1
+fi
+
+vzend=$(sed -n '/#define ZEND_MODULE_API_NO/{s/^[^0-9]*//;p;}' Zend/zend_modules.h)
+if test "x${vzend}" != "x%{zendver}"; then
+   : Error: Upstream Zend ABI version is now ${vzend}, expecting %{zendver}.
+   : Update the zendver macro and rebuild.
+   exit 1
+fi
+
+# Safety check for PDO ABI version change
+vpdo=$(sed -n '/#define PDO_DRIVER_API/{s/.*[ 	]//;p}' ext/pdo/php_pdo_driver.h)
+if test "x${vpdo}" != "x%{pdover}"; then
+   : Error: Upstream PDO ABI version is now ${vpdo}, expecting %{pdover}.
+   : Update the pdover macro and rebuild.
+   exit 1
+fi
+
+# Check for some extension version
+ver=$(sed -n '/#define PHP_OCI8_VERSION /{s/.* "//;s/".*$//;p}' ext/oci8/php_oci8.h)
+if test "$ver" != "%{oci8ver}"; then
+   : Error: Upstream OCI8 version is now ${ver}, expecting %{oci8ver}.
+   : Update the oci8ver macro and rebuild.
+   exit 1
+fi
+
+%if %{with_zip}
+ver=$(sed -n '/#define PHP_ZIP_VERSION /{s/.* "//;s/".*$//;p}' ext/zip/php_zip.h)
+if test "$ver" != "%{zipver}"; then
+   : Error: Upstream ZIP version is now ${ver}, expecting %{zipver}.
+   : Update the %{zipver} macro and rebuild.
+   exit 1
+fi
+%endif
+
+# https://bugs.php.net/63362 - Not needed but installed headers.
+# Drop some Windows specific headers to avoid installation,
+# before build to ensure they are really not needed.
+rm -f TSRM/tsrm_win32.h \
+      TSRM/tsrm_config.w32.h \
+      Zend/zend_config.w32.h \
+      ext/mysqlnd/config-win.h \
+      ext/standard/winver.h \
+      main/win32_internal_function_disabled.h \
+      main/win95nt.h
+
+# Fix some bogus permissions
+find . -name \*.[ch] -exec chmod 644 {} \;
+chmod 644 README.*
+
+# Some extensions have their own configuration file
+cp %{SOURCE50} 10-opcache.ini
+cp %{SOURCE51} .
+sed -e 's:%{_root_sysconfdir}:%{_sysconfdir}:' \
+    -i 10-opcache.ini
+
+# Regenerated bison files
+# to force, rm Zend/zend_{language,ini}_parser.[ch]
+if [ ! -f Zend/zend_language_parser.c ]; then
+  scripts/dev/genfiles
+fi
+
+
+%build
+%define _lto_cflags %{nil}
+
+# Set build date from https://reproducible-builds.org/specs/source-date-epoch/
+export SOURCE_DATE_EPOCH=$(date +%s -r NEWS)
+
+# Force use of system libtool:
+libtoolize --force --copy
+cat $(aclocal --print-ac-dir)/{libtool,ltoptions,ltsugar,ltversion,lt~obsolete}.m4 >build/libtool.m4
+
+# Regenerate configure scripts (patches change config.m4's)
+touch configure.ac
+./buildconf --force
+
+CFLAGS=$(echo $RPM_OPT_FLAGS -fno-strict-aliasing -Wno-pointer-sign | sed 's/-mstackrealign//')
+export CFLAGS
+
+# Install extension modules in %{_libdir}/php/modules.
+EXTENSION_DIR=%{_libdir}/php/modules; export EXTENSION_DIR
+
+# Set PEAR_INSTALLDIR to ensure that the hard-coded include_path
+# includes the PEAR directory even though pear is packaged
+# separately.
+PEAR_INSTALLDIR=%{_datadir}/pear; export PEAR_INSTALLDIR
+
+PATH=/usr/local/bin:$PATH
+export PATH
+
+# Shell function to configure and build a PHP tree.
+build() {
+# Old/recent bison version seems to produce a broken parser;
+# upstream uses GNU Bison 2.3. Workaround:
+# Only provided in official tarball (not in snapshot)
+if [ -f ../Zend/zend_language_parser.c ]; then
+mkdir Zend && cp ../Zend/zend_{language,ini}_{parser,scanner}.[ch] Zend
+fi
+
+# Always static:
+# date, filter, libxml, reflection, spl: not supported
+# hash: for PHAR_SIG_SHA256 and PHAR_SIG_SHA512
+# session: dep on hash, used by soap
+# pcre: used by filter, zip
+# pcntl, readline: only used by CLI sapi
+# openssl: for PHAR_SIG_OPENSSL
+# zlib: used by image
+
+ln -sf ../configure
+%configure \
+    --enable-rtld-now \
+    --cache-file=../config.cache \
+    --prefix=%{_prefix} \
+    --with-libdir=%{_lib} \
+    --with-config-file-path=%{_sysconfdir} \
+    --with-config-file-scan-dir=%{_sysconfdir}/php.d \
+    --disable-debug \
+    --with-pic \
+    --disable-rpath \
+    --without-pear \
+    --with-exec-dir=%{_bindir} \
+    --without-gdbm \
+    --with-openssl \
+    --with-system-ciphers \
+%if %{with_libpcre}
+    --with-external-pcre \
+%endif
+    --with-zlib \
+    --with-layout=GNU \
+    --with-kerberos \
+    --with-libxml \
+    --with-mhash \
+    --with-bz2 \
+    --with-password-argon2 \
+%if %{with_dtrace}
+    --enable-dtrace \
+%endif
+    $*
+if test $? != 0; then
+  tail -500 config.log
+  : configure failed
+  exit 1
+fi
+
+make %{?_smp_mflags}
+}
+
+# Build php-cgi with the CGI SAPI, and most the shared extensions
+pushd build-cgi
+
+build --prefix=%{_prefix} \
+      --libdir=%{_libdir}/php \
+      --enable-litespeed \
+      --enable-pcntl \
+      --enable-opcache \
+      --enable-opcache-file \
+      --enable-phpdbg \
+      --with-imap=shared --with-imap-ssl \
+      --enable-mbstring=shared \
+      --enable-mbregex \
+      --enable-gd=shared \
+%if %{with_libgd}
+      --with-external-gd \
+%else
+      --with-webp \
+      --with-jpeg \
+      --with-xpm \
+      --with-freetype \
+%endif
+      --with-gmp=shared \
+      --enable-calendar=shared \
+      --enable-bcmath=shared \
+      --with-bz2=shared \
+      --enable-ctype=shared \
+      --enable-dba=shared --with-db4=/usr \
+                          --with-tcadb=/usr \
+      --enable-exif=shared \
+      --enable-ftp=shared \
+      --with-gettext=shared \
+      --with-iconv=shared \
+      --enable-sockets=shared \
+      --enable-tokenizer=shared \
+      --with-ldap=shared --with-ldap-sasl \
+      --enable-mysqlnd=shared \
+      --with-mysqli=shared,mysqlnd \
+      --with-mysql-sock=%{mysql_sock} \
+%if %{with_oci8}
+%ifarch x86_64
+      --with-oci8=shared,instantclient,/usr/%{_lib}/oracle/%{oraclever}/client64/lib,%{oraclever} \
+%else
+      --with-oci8=shared,instantclient,/usr/%{_lib}/oracle/%{oraclever}/client/lib,%{oraclever} \
+%endif
+      --with-pdo-oci=shared,instantclient,/usr,%{oraclever} \
+%endif
+%if %{with_interbase}
+      --with-interbase=shared,/usr/%{_lib}/firebird \
+      --with-pdo-firebird=shared,/usr/%{_lib}/firebird \
+%endif
+      --enable-dom=shared \
+      --with-pgsql=shared \
+      --enable-simplexml=shared \
+      --enable-xml=shared \
+      --with-snmp=shared,/usr \
+      --enable-soap=shared \
+      --with-xsl=shared,/usr \
+      --enable-xmlreader=shared --enable-xmlwriter=shared \
+      --with-curl=shared \
+      --enable-pdo=shared \
+      --with-pdo-odbc=shared,unixODBC,/usr \
+      --with-pdo-mysql=shared,mysqlnd \
+      --with-pdo-pgsql=shared,/usr \
+      --with-pdo-sqlite=shared,/usr \
+%if %{with_sqlite3}
+      --with-sqlite3=shared,/usr \
+%else
+      --without-sqlite3 \
+%endif
+      --enable-json=shared \
+%if %{with_zip}
+      --with-zip=shared \
+%endif
+      --without-readline \
+      --with-libedit \
+      --with-pspell=shared \
+      --enable-phar=shared \
+%if %{with_tidy}
+      --with-tidy=shared,/usr \
+%endif
+%if %{with_mssql}
+      --with-mssql=shared,/usr \
+      --with-pdo-dblib=shared,/usr \
+%endif
+      --enable-sysvmsg=shared --enable-sysvshm=shared --enable-sysvsem=shared \
+      --enable-shmop=shared \
+      --enable-posix=shared \
+      --with-unixODBC=shared,/usr \
+      --enable-intl=shared \
+%if 0%{?rhel} >= 6
+      --with-icu-dir=/usr \
+%else
+      --with-icu-dir=/usr/local \
+%endif
+%if %{with_enchant}
+      --with-enchant=shared \
+%endif
+%if %{with_recode}
+      --with-recode=shared,/usr \
+%endif
+      --enable-fileinfo=shared \
+      --with-sodium=shared
+popd
+
+without_shared="--disable-gd \
+      --disable-dom --disable-dba --without-unixODBC \
+      --disable-opcache \
+      --disable-json \
+      --without-ffi \
+      --disable-xmlreader --disable-xmlwriter \
+      --without-sodium \
+      --without-sqlite3 --disable-phar --disable-fileinfo \
+      --without-pspell \
+      --without-curl --disable-posix --disable-xml \
+      --disable-simplexml --disable-exif --without-gettext \
+      --without-iconv --disable-ftp --without-bz2 --disable-ctype \
+      --disable-shmop --disable-sockets --disable-tokenizer \
+      --disable-sysvmsg --disable-sysvshm --disable-sysvsem"
+
+# Build Apache module, and the CLI SAPI, /usr/bin/php
+pushd build-apache
+build --libdir=/usr/%{_lib}/ \
+      --with-litespeed \
+      --without-mysqli \
+      --without-pdo-sqlite \
+      ${without_shared}
+popd
+
+%check
+%if %runselftest
+
+cd build-apache
+
+# Run tests, using the CLI SAPI
+export NO_INTERACTION=1 REPORT_EXIT_STATUS=1 MALLOC_CHECK_=2
+export SKIP_ONLINE_TESTS=1
+unset TZ LANG LC_ALL
+if ! make test; then
+  set +x
+  for f in $(find .. -name \*.diff -type f -print); do
+    if ! grep -q XFAIL "${f/.diff/.phpt}"
+    then
+      echo "TEST FAILURE: $f --"
+      cat "$f"
+      echo -e "\n-- $f result ends."
+    fi
+  done
+  set -x
+  #exit 1
+fi
+unset NO_INTERACTION REPORT_EXIT_STATUS MALLOC_CHECK_
+%endif
+
+%install
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+
+
+# Install everything from the CGI SAPI build
+make -C build-cgi install \
+     INSTALL_ROOT=$RPM_BUILD_ROOT
+
+#install litespeed
+install -d -m 755 $RPM_BUILD_ROOT%{_bindir}
+install -m 755 build-cgi/sapi/litespeed/php $RPM_BUILD_ROOT%{_bindir}/lsphp
+# install cli php ( which has been replaced by the above installation
+install -m 755 build-cgi/sapi/cli/php $RPM_BUILD_ROOT%{_bindir}/php
+
+# rename extensions build with mysqlnd
+#mv $RPM_BUILD_ROOT%{_libdir}/php/modules/mysql.so \
+#   $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqlnd_mysql.so
+#mv $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqli.so \
+#   $RPM_BUILD_ROOT%{_libdir}/php/modules/mysqlnd_mysqli.so
+#mv $RPM_BUILD_ROOT%{_libdir}/php/modules/pdo_mysql.so \
+#   $RPM_BUILD_ROOT%{_libdir}/php/modules/pdo_mysqlnd.so
+
+# Install the mysql extension build with libmysql
+#make -C build-apache install-modules \
+#	INSTALL_ROOT=$RPM_BUILD_ROOT
+
+
+# Install the default configuration file and icons
+install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/
+install -m 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/php.ini
+
+# For third-party packaging:
+install -m 755 -d $RPM_BUILD_ROOT%{_datadir}/php
+
+install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/php.d
+install -m 755 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp
+install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/session
+install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/wsdlcache
+
+
+#install -m 755 build-apache/sapi/litespeed/php $RPM_BUILD_ROOT%{_bindir}/lsphp
+
+# Fix the link
+(cd $RPM_BUILD_ROOT%{_bindir}; ln -sfn phar.phar phar)
+
+# Generate files lists and stub .ini files for each subpackage
+for mod in pgsql odbc ldap snmp \
+    mysqlnd mysqli pdo_mysql \
+%if %{with_imap}
+    imap \
+%endif
+    mbstring gd dom xsl soap bcmath dba xmlreader xmlwriter \
+    simplexml bz2 calendar ctype exif ftp gettext gmp iconv \
+    sockets tokenizer opcache \
+    pdo pdo_pgsql pdo_odbc pdo_sqlite \
+%if %{with_sqlite3}
+    sqlite3 \
+%endif
+%if %{with_oci8}
+    oci8 pdo_oci \
+%endif
+%if %{with_interbase}
+    interbase pdo_firebird \
+%endif
+%if %{with_enchant}
+    enchant \
+%endif
+    phar fileinfo intl \
+%if %{with_tidy}
+    tidy \
+%endif
+%if %{with_mssql}
+    pdo_dblib mssql \
+%endif
+%if %{with_recode}
+    recode \
+%endif
+%if %{with_zip}
+    zip \
+%endif
+    pspell curl xml \
+    sodium \
+    posix shmop sysvshm sysvsem sysvmsg
+do
+    # for extension load order
+    case $mod in
+      opcache)
+        # Zend extensions
+        ini=10-${mod}.ini;;
+      pdo_*|mysqli|xmlreader)
+        # Extensions with dependencies on 20-*
+        ini=30-${mod}.ini;;
+      *)
+        # Extensions with no dependency
+        ini=20-${mod}.ini;;
+    esac
+    # some extensions have their own config file
+    if [ -f ${ini} ]; then
+      cp -p ${ini} $RPM_BUILD_ROOT%{_sysconfdir}/php.d/${ini}
+    else
+      cat > $RPM_BUILD_ROOT%{_sysconfdir}/php.d/${ini} <<EOF
+; Enable ${mod} extension module
+extension=${mod}.so
+EOF
+    fi
+    cat > files.${mod} <<EOF
+%attr(755,root,root) %{_libdir}/php/modules/${mod}.so
+%config(noreplace) %attr(644,root,root) %{_sysconfdir}/php.d/${ini}
+EOF
+done
+
+#fix opcache.ini missing line
+
+
+# The dom, xsl and xml* modules are all packaged in php-xml
+cat files.dom files.xsl files.xml{reader,writer} \
+    files.simplexml >> files.xml
+
+#libmysql
+#cat files.mysqli >> files.mysql
+#cat files.pdo_mysql >> files.mysql
+
+
+# mysqlnd
+cat files.mysqli \
+    files.pdo_mysql \
+    >> files.mysqlnd
+
+# Split out the PDO modules
+%if %{with_mssql}
+cat files.pdo_dblib >> files.mssql
+%endif
+cat files.pdo_pgsql >> files.pgsql
+cat files.pdo_odbc >> files.odbc
+%if %{with_oci8}
+cat files.pdo_oci >> files.oci8
+%endif
+%if %{with_interbase}
+cat files.pdo_firebird >> files.interbase
+%endif
+
+# sysv* and posix in packaged in php-process
+cat files.shmop files.sysv* files.posix > files.process
+
+# Package sqlite3 and pdo_sqlite with pdo; isolating the sqlite dependency
+# isn't useful at this time since rpm itself requires sqlite.
+cat files.pdo_sqlite >> files.pdo
+%if %{with_sqlite3}
+cat files.sqlite3 >> files.pdo
+%endif
+
+# Package zip, curl, phar and fileinfo in -common.
+cat files.curl files.phar files.fileinfo \
+    files.exif files.gettext files.iconv files.calendar \
+    files.ftp files.bz2 files.ctype files.sockets \
+    files.tokenizer > files.common
+%if %{with_zip}
+cat files.zip >> files.common
+%endif
+
+# The default Zend OPcache blacklist file
+install -m 644 opcache-default.blacklist $RPM_BUILD_ROOT%{_sysconfdir}/php.d/opcache-default.blacklist
+
+# Install the macros file:
+#install -m 644 -D macros.php \
+#           $RPM_BUILD_ROOT%{_sysconfdir}/rpm/macros.php
+
+# Remove unpackaged files
+rm -rf $RPM_BUILD_ROOT%{_libdir}/php/modules/*.a \
+       $RPM_BUILD_ROOT%{_bindir}/{phptar} \
+       $RPM_BUILD_ROOT%{_datadir}/pear \
+       $RPM_BUILD_ROOT%{_libdir}/libphp5.la
+
+# Remove irrelevant docs
+rm -f README.{Zeus,QNX,CVS-RULES}
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm files.*
+
+%{!?_licensedir:%global license %%doc}
+
+%files
+%defattr(-,root,root)
+%{_bindir}/lsphp
+%{_bindir}/php
+%{_bindir}/php-cgi
+%{_bindir}/phar.phar
+%{_bindir}/phar
+# provides phpize here (not in -devel) for pecl command
+%{_bindir}/phpize
+%{_mandir}/man1/php.1*
+%{_mandir}/man1/php-cgi.1*
+%{_mandir}/man1/phar.1*
+%{_mandir}/man1/phar.phar.1*
+%{_mandir}/man1/phpize.1*
+#%doc sapi/cgi/README* sapi/cli/README
+
+%files common -f files.common
+%defattr(-,root,root)
+%doc EXTENSIONS NEWS README*
+%license LICENSE Zend/ZEND_* TSRM_LICENSE
+%license libmagic_LICENSE
+#%license phar_LICENSE
+%doc php.ini-*
+%config(noreplace) %{_sysconfdir}/php.ini
+%dir %{_sysconfdir}/php.d
+%dir %{_libdir}/php
+%dir %{_libdir}/php/modules
+%dir %{_localstatedir}/lib/lsphp
+%attr(1733,root,root) %dir %{_localstatedir}/lib/lsphp/session
+%attr(0770,root,root) %dir %{_localstatedir}/lib/lsphp/wsdlcache
+%dir %{_datadir}/php
+
+%files dbg
+%defattr(-,root,root)
+%{_bindir}/phpdbg
+%{_mandir}/man1/phpdbg.1*
+#%doc sapi/phpdbg/{README.md,CREDITS}
+
+%files devel
+%defattr(-,root,root)
+%{_bindir}/php-config
+%{_includedir}/php
+%{_libdir}/php/build
+%{_mandir}/man1/php-config.1*
+
+%files pgsql -f files.pgsql
+%files odbc -f files.odbc
+%if %{with_imap}
+%files imap -f files.imap
+%endif
+%files ldap -f files.ldap
+%files snmp -f files.snmp
+%files xml -f files.xml
+%files mbstring -f files.mbstring
+%defattr(-,root,root,-)
+%license libmbfl_LICENSE
+#%license oniguruma_COPYING
+#%license ucgendat_LICENSE
+%files gd -f files.gd
+%defattr(-,root,root,-)
+#%if ! %{with_libgd}
+#%license libgd_README
+#%license libgd_COPYING
+#%endif
+%files soap -f files.soap
+%files bcmath -f files.bcmath
+%defattr(-,root,root,-)
+#%license libbcmath_COPYING
+%files gmp -f files.gmp
+%files dba -f files.dba
+%files pdo -f files.pdo
+%if %{with_tidy}
+%files tidy -f files.tidy
+%endif
+%if %{with_mssql}
+%files mssql -f files.mssql
+%endif
+%files pspell -f files.pspell
+%files intl -f files.intl
+%files process -f files.process
+%if %{with_recode}
+%files recode -f files.recode
+%endif
+%if %{with_interbase}
+%files interbase -f files.interbase
+%endif
+%if %{with_enchant}
+%files enchant -f files.enchant
+%endif
+
+%files mysqlnd -f files.mysqlnd
+%files opcache -f files.opcache
+%config(noreplace) %{_sysconfdir}/php.d/opcache-default.blacklist
+%if %{with_oci8}
+%files oci8 -f files.oci8
+%endif
+
+%if %{with_zip}
+%files zip -f files.zip
+%endif
+%files sodium -f files.sodium
+
+%changelog
+* Thu Sep 7 2017 lsadm <info@litespeedtech.com> 7.1.9
+- Updat ociver to 2.1.7
+
+* Wed Oct 19 2016 lsadm <info@litespeedtech.com> 7.1.0 rc4
+- Get prepared for PHP72
+
+* Tue Jul 14 2015 lsadm <info@litespeedtech.com> 7.0.0 beta1
+- update to 7.0.0beta1
+- update patch 8 libdb for beta2
+
+* Mon Jun 15 2015 lsadm <info@litespeedtech.com> 7.0.0 alpha1
+- update to 7.0.0alpha1
+
+* Fri Jun 12 2015 lsadm <info@litespeedtech.com> 5.6.10
+- opcache version changed to 7.0.6-dev
+
+* Mon May 18 2015 lsadm <info@litespeedtech.com> 5.6.9
+- LSPHP 5.6.9
+- update patch 42 to php-5.6.9-systzdata-v12.patch
+
+* Wed Oct 09 2014 lsadm <info@litespeedtech.com> 5.6.1-1
+- LSPHP 5.6.1
+- fix opcache.ini missing lines
+
+* Fri Sep 05 2014 lsadm <info@litespeedtech.com> 5.6.0-1
+- initial spec for LSPHP 5.6
+- Remove gd-devel condition for general use.

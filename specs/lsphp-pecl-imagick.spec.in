@@ -1,0 +1,249 @@
+# remirepo spec file for php-pecl-imagick
+#
+# Copyright (c) 2008-2024 Remi Collet
+# License: CC-BY-SA-4.0
+# http://creativecommons.org/licenses/by-sa/4.0/
+#
+# Please, preserve the changelog entries
+#
+
+# we don't want -z defs linker flag
+%undefine _strict_symbol_defs_build
+
+%if 0%{?scl:1}
+%global sub_prefix  %{scl_prefix}
+%scl_package        php-pecl-imagick
+%endif
+
+%define php_prefix lsphp%%PHP_VER%%
+%define _prefix /usr/local/lsws/%{php_prefix}
+%define _sysconfdir %{_prefix}/etc
+%define _localstatedir %{_prefix}/var
+%define _mandir %{_prefix}/share/man
+%define _libdir %{_prefix}/%{_lib}
+%define _bindir %{_prefix}/bin
+%define _datadir %{_prefix}/share
+%define macrosdir %{_prefix}/etc/rpm
+%define _docdir %{_prefix}/share/doc
+%define _includedir %{_prefix}/include
+%define php_inidir %{_prefix}/etc/php.d
+%define php_extdir %{_libdir}/php/modules
+%define php_incldir %{_includedir}/php
+%define pecl_xmldir %{_prefix}/share/pear/.pkgxml
+%define pecl_testdir %{_prefix}/var/pear
+%define pecl_docdir %{_prefix}/share/doc
+%define peardir /usr/share/pear
+%global __php %{_bindir}/php
+
+%global xdebug_version %%VERSION%%
+%global php_zend_api %%PHP_API%%
+%global php_core_api %%PHP_API%%
+%global pecl_name   imagick
+%global with_zts    0
+
+%global gh_commit   623a3ac0386c93d62c60cbfe610505f2e35780f3
+%global gh_short    %(c=%{gh_commit}; echo ${c:0:7})
+%global gh_owner    imagick
+%global gh_project  imagick
+#global gh_date     20151204
+
+%global ini_name    40-%{pecl_name}.ini
+%global upstream_version 3.8.0
+#global upstream_prever  RC2
+
+%global sources          %{pecl_name}-%{upstream_version}%{?upstream_prever}
+
+Summary:       Extension to create and modify images using ImageMagick
+Name:          %{?php_prefix}-pecl-imagick
+Version:       %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
+Release:       %%BUILD%%%{?dist}%{!?nophptag:%(%{__php} -r 'echo ".".PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)}
+Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
+License:       PHP-3.01
+URL:           https://pecl.php.net/package/imagick
+
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildRequires: make
+BuildRequires: %{?dtsprefix}gcc
+BuildRequires: %{?php_prefix}-devel
+BuildRequires: %{?php_prefix}-pear
+BuildRequires: ImageMagick-devel
+
+Requires:      %{?php_prefix}(zend-abi) = %{php_zend_api}
+Requires:      %{?php_prefix}(api) = %{php_core_api}
+Requires:      ImageMagick
+%{?_sclreq:Requires: %{?scl_prefix}runtime%{?_sclreq}%{?_isa}}
+
+Provides:      %{?php_prefix}-%{pecl_name}               = %{version}
+Provides:      %{?php_prefix}-%{pecl_name}%{?_isa}       = %{version}
+Provides:      %{?php_prefix}-pecl(%{pecl_name})         = %{version}
+Provides:      %{?php_prefix}-pecl(%{pecl_name})%{?_isa} = %{version}
+
+Conflicts:     %{?php_prefix}-pecl-gmagick
+
+%if 0%{?fedora} < 20 && 0%{?rhel} < 7
+# Filter private shared
+%{?filter_provides_in: %filter_provides_in %{_libdir}/.*\.so$}
+%{?filter_setup}
+%endif
+
+
+%description
+Imagick is a native php extension to create and modify images
+using the ImageMagick API.
+
+Package built for PHP %(%{__php} -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)%{?scl: as Software Collection (%{scl} by %{?scl_vendor}%{!?scl_vendor:rh})}.
+
+
+%package devel
+Summary:       %{pecl_name} extension developer files (header)
+Group:         Development/Libraries
+Requires:      %{?php_prefix}-pecl-imagick
+Requires:      %{?php_prefix}-devel%{?_isa}
+
+%description devel
+These are the files needed to compile programs using %{pecl_name} extension.
+
+
+%prep
+%setup -q -c
+mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
+cd NTS
+
+: Avoid arginfo to be regenerated
+rm *.stub.php
+
+: Fix permission for archive generated on Windows
+find . -type f -exec chmod -x {} \;
+
+extver=$(sed -n '/#define PHP_IMAGICK_VERSION/{s/.* "//;s/".*$//;p}' php_imagick.h)
+if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
+   : Error: Upstream version is ${extver}, expecting %{upstream_version}%{?upstream_prever}.
+   exit 1
+fi
+cd ..
+
+cat > %{ini_name} << 'EOF'
+; Enable %{pecl_name} extension module
+extension = %{pecl_name}.so
+
+; Documentation: http://php.net/imagick
+
+; Dont check builtime and runtime versions of ImageMagick
+imagick.skip_version_check=1
+
+; Fixes a drawing bug with locales that use ',' as float separators.
+;imagick.locale_fix=0
+
+; Used to enable the image progress monitor.
+;imagick.progress_monitor=0
+
+; multi-thread management
+;imagick.set_single_thread => 1 => 1
+;imagick.shutdown_sleep_count => 10 => 10
+
+; to allow null images
+;imagick.allow_zero_dimension_images => 0 => 0
+EOF
+
+%if %{with_zts}
+mkdir ZTS
+%endif
+
+
+%build
+%{?dtsenable}
+
+: Standard NTS build
+cd NTS
+%{_bindir}/phpize
+%configure --with-imagick=%{prefix} --with-php-config=%{_bindir}/php-config
+%make_build
+
+%if %{with_zts}
+cd ../ZTS
+: ZTS build
+cd ../ZTS
+%configure --with-imagick=%{_root_prefix} --with-php-config=%{__ztsphpconfig}
+%make_build
+%endif
+
+
+%install
+%{?dtsenable}
+
+%make_install INSTALL_ROOT=%{buildroot} -C NTS
+
+# Drop in the bit of configuration
+install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
+
+%if %{with_zts}
+%make_install -C ZTS
+install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
+%endif
+
+%check
+cd NTS
+export REPORT_EXIT_STATUS=1
+
+# very long, and erratic results, sometime timeout
+rm tests/229_Tutorial_fxAnalyzeImage_case1.phpt
+rm tests/244_Tutorial_psychedelicFontGif_basic.phpt
+# very long, and erratic results, sometime segfault on shutdown (EL-7/8)
+rm tests/073_Imagick_forwardFourierTransformImage_basic.phpt
+rm tests/086_Imagick_forwardFourierTransformImage_basic.phpt
+
+: simple module load test for NTS extension
+%{__php} --no-php-ini \
+    --define extension_dir=%{buildroot}%{php_extdir} \
+    --define extension=%{pecl_name}.so \
+    --modules | grep '^%{pecl_name}$'
+
+%if %{with tests}
+: upstream test suite for NTS extension
+TEST_PHP_EXECUTABLE=%{__php} \
+TEST_PHP_ARGS="-n -d extension=%{buildroot}%{php_extdir}/%{pecl_name}.so" \
+%if "%{php_version}" > "7.4"
+%{__php} -n run-tests.php -q --show-diff %{?_smp_mflags}
+%else
+%{__php} -n run-tests.php -q --show-diff
+%endif
+
+if [ -f %{php_extdir}/%{pecl_name}.so ]; then
+: upstream test suite for extension built with previous version
+%{__php} --ri imagick
+TEST_PHP_ARGS="-n -d extension=%{pecl_name}" \
+%{__php} -n run-tests.php -q --show-diff %{?_smp_mflags}
+fi
+%endif
+
+%if %{with_zts}
+: simple module load test for ZTS extension
+%{__ztsphp} --no-php-ini \
+    --define extension_dir=%{buildroot}%{php_ztsextdir} \
+    --define extension=%{pecl_name}.so \
+    --modules | grep '^%{pecl_name}$'
+%endif
+
+
+%files
+%config(noreplace) %{php_inidir}/%{ini_name}
+%{php_extdir}/%{pecl_name}.so
+
+%if %{with_zts}
+%config(noreplace) %{php_ztsinidir}/%{ini_name}
+%{php_ztsextdir}/%{pecl_name}.so
+%endif
+
+%files devel
+%{php_incldir}/ext/%{pecl_name}
+
+%if %{with_zts}
+%{php_ztsincldir}/ext/%{pecl_name}
+%endif
+
+
+%changelog
+* Tue Jul 23 2019 Remi Collet <remi@remirepo.net> - 3.4.4-5
+- add patch for PHP 7.4 from
+  https://github.com/Imagick/imagick/pull/296
+- re-enable test suite
