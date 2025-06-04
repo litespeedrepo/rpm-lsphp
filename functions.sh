@@ -271,7 +271,7 @@ build_rpms()
             mock -r ${platform} --copyin compiled/10/ccache /usr/bin/ccache
         fi
         # Use mock -v to enable debug or mock --quiet to silence 
-        mock -v --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
+        mock --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
         if [ ${?} != 0 ]; then
             echo 'rpm build package has issue; exit!'; exit 1
         fi
