@@ -1,7 +1,6 @@
 #!/bin/bash
 #set -x
 cur_path=$(pwd)
-DIST_TAG=".el$(echo "$platforms" | grep -oP '\d+' | head -n1)"
 
 echow()
 {
@@ -133,6 +132,7 @@ set_paras()
     BUILDER_NAME="LiteSpeedTech"
     BUILDER_EMAIL="info@litespeedtech.com"
     PRODUCT_WITH_VER=${product}-${version}-${revision}
+    DIST_TAG=".el$(echo "$platforms" | grep -oP '\d+' | head -n1)"
 }
 
 set_build_dir()
@@ -260,16 +260,18 @@ build_rpms()
     if [ $? != 0 ]; then
         echoR 'rpm source package has issue; exit!'; exit 1
     fi
-
     echoB "${FPACE} - Build rpm package with mock"
+    [[ "$product" == *-pecl-* ]] && DIST_TAG+=".${PHP_DOTV}"
     SRPM=${BUILD_SRPMS}/${PRODUCT_WITH_VER}${DIST_TAG}.src.rpm
+    echoG "${EPACE}SRPM: ${SRPM}"
+
     for platform in ${platforms};
     do
         if [ "${EPEL_TAG}" = '10' ]; then
             mock -r ${platform} --copyin compiled/10/ccache /usr/bin/ccache
         fi
         # Use mock -v to enable debug or mock --quiet to silence 
-        mock --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
+        mock -v --resultdir=${RESULT_DIR}/${platform} --disable-plugin=selinux -r ${platform} "${SRPM}"
         if [ ${?} != 0 ]; then
             echo 'rpm build package has issue; exit!'; exit 1
         fi
