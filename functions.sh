@@ -301,7 +301,7 @@ upload_to_server(){
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/"
     fi
     echoG '- Start to sync'
-    rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}*.rpm -e ssh root@${target_server}:${TARGET_FD}
+    rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}*.rpm -e "ssh -oStrictHostKeyChecking=no" root@${target_server}:${TARGET_FD}
 }
 
 gen_dev_release(){
