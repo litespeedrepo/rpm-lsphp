@@ -300,6 +300,7 @@ upload_to_server(){
     else
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/"
     fi
+    echoG '- Start to sync'
     rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}*.rpm -e ssh root@${target_server}:${TARGET_FD}
 }
 
