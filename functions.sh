@@ -296,12 +296,12 @@ upload_to_server(){
     eval `ssh-agent -s`
     echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
     if [ ${revision} -gt 1 ]; then
-        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/update/${archs}/"
+        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/update/${archs}/RPMS/"
     else
-        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/"
+        TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/RPMS/"
     fi
     echoG '- Start to sync'
-    rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}*.rpm -e "ssh -oStrictHostKeyChecking=no" root@${target_server}:${TARGET_FD}
+    rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}/*.rpm -e "ssh -oStrictHostKeyChecking=no" root@${target_server}:${TARGET_FD}
 }
 
 gen_dev_release(){
