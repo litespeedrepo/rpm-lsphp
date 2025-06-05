@@ -295,7 +295,8 @@ upload_to_server(){
     REP_LOC='/var/www/html'
     echoG "- Uploading rpm to dev - distribution ${EPEL_TAG}"
     eval `ssh-agent -s`
-    echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
+    #echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
+    echo "${BUILD_KEY}" | ssh-add -
     if [ ${revision} -gt 1 ]; then
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/update/${archs}/"
     else
