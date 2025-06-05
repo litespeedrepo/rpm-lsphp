@@ -261,7 +261,6 @@ build_rpms()
         echoR 'rpm source package has issue; exit!'; exit 1
     fi
     echoB "${FPACE} - Build rpm package with mock"
-    #[[ "$product" == *-pecl-* ]] && DIST_TAG+=".${PHP_DOTV}"
     SRPM=${BUILD_SRPMS}/${PRODUCT_WITH_VER}${DIST_TAG}.src.rpm
     echoG "${EPACE}SRPM: ${SRPM}"
 
@@ -295,8 +294,7 @@ upload_to_server(){
     REP_LOC='/var/www/html'
     echoG "- Uploading rpm to dev - distribution ${EPEL_TAG}"
     eval `ssh-agent -s`
-    #echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
-    echo "${BUILD_KEY}" | ssh-add -
+    echo "${BUILD_KEY}" | ssh-add - > /dev/null 2>&1
     if [ ${revision} -gt 1 ]; then
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/update/${archs}/"
     else

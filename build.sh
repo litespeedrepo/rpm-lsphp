@@ -7,7 +7,6 @@ source ./functions.sh #2>/dev/null
 EPACE='        '
 FPACE='    '
 PHP_V=83
-#PHP_DOTV='8.3'
 product=$1
 platforms=$2
 input_archs=$3
