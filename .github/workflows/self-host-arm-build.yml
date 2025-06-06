@@ -10,7 +10,7 @@ on:
         options:
           - '"lsphp"'
           - '"imap"'
-          - '"apcu"'
+          - '"apcu"'          
           - '"imagick"'
           - '"ioncube"'
           - '"memcached"'
@@ -18,7 +18,7 @@ on:
           - '"pear"'
           - '"redis"'
           - '"igbinary"'
-          - '"lsphp","imap","pear","igbinary","apcu","imagick","ioncube","msgpack","memcached","redis"'
+          - '"lsphp","imap","pear","apcu","igbinary","imagick","ioncube","msgpack","memcached","redis"'
       version:
         description: 'version number'
         type: number
