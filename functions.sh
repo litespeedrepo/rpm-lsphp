@@ -304,5 +304,6 @@ upload_to_server(){
 }
 
 gen_dev_release(){
-    echo 'test'
+    echoG '- Generate dev release'
+    ssh -oStrictHostKeyChecking=no root@${target_server} -t "/var/www/gen_rpm_release.sh ${EPEL_TAG}"
 }
