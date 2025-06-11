@@ -65,10 +65,6 @@ BuildRequires: gcc
 BuildRequires:  %{php_prefix}
 BuildRequires:  %{php_prefix}-devel
 BuildRequires:  %{php_prefix}-pear
-%if 0%{?rhel} >= 8
-BuildRequires: pcre2-devel
-%endif
-BuildRequires:  pcre-devel
 
 Requires:      %{php_prefix}-common
 Provides:      %{php_prefix}-apcu = %{apcuver}
