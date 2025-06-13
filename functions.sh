@@ -1,6 +1,7 @@
 #!/bin/bash
 #set -x
 cur_path=$(pwd)
+DIST_TAG=".el$(echo "$platforms" | grep -oP '\d+' | head -n1)"
 
 echow()
 {
@@ -132,7 +133,6 @@ set_paras()
     BUILDER_NAME="LiteSpeedTech"
     BUILDER_EMAIL="info@litespeedtech.com"
     PRODUCT_WITH_VER=${product}-${version}-${revision}
-    DIST_TAG=".el$(echo "$platforms" | grep -oP '\d+' | head -n1)"
 }
 
 set_build_dir()
@@ -165,7 +165,7 @@ generate_spec()
 {
     echoB "${FPACE} - Generate spec"
     date=$(date +"%a %b %d %Y")
-    echoG "${FPACE}BUILD_DIR is: ${BUILD_DIR}"
+    echoG "BUILD_DIR is: ${BUILD_DIR}"
  
     if [ ! -f "${PRODUCT_DIR}/changelog" ]; then
         change_log="* ${date} ${BUILDER_NAME} ${BUILDER_EMAIL}\n- Initial spec creation for ${product} rpm";
@@ -260,10 +260,9 @@ build_rpms()
     if [ $? != 0 ]; then
         echoR 'rpm source package has issue; exit!'; exit 1
     fi
+
     echoB "${FPACE} - Build rpm package with mock"
     SRPM=${BUILD_SRPMS}/${PRODUCT_WITH_VER}${DIST_TAG}.src.rpm
-    echoG "${EPACE}SRPM: ${SRPM}"
-
     for platform in ${platforms};
     do
         if [ "${EPEL_TAG}" = '10' ]; then
@@ -301,6 +300,7 @@ upload_to_server(){
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/RPMS/"
     fi
     echoG '- Start to sync'
+    new_rpms=$(find . -maxdepth 1 -type f -name '*.rpm' ! -name '*.src.*' ! -name '*debuginfo*' -printf '%f ')
     rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}/*.rpm -e "ssh -oStrictHostKeyChecking=no" root@${target_server}:${TARGET_FD}
 }
 
