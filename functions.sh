@@ -300,10 +300,12 @@ upload_to_server(){
         TARGET_FD="${REP_LOC}/centos/${EPEL_TAG}/${archs}/RPMS/"
     fi
     echoG '- Start to sync'
+    new_rpms=$(find . -maxdepth 1 -type f -name '*.rpm' ! -name '*.src.*' ! -name '*debuginfo*' -printf '%f ')
     rsync -av --exclude '*.src.*' --exclude '*debuginfo*' ${RESULT_DIR}/${platforms}/*.rpm -e "ssh -oStrictHostKeyChecking=no" root@${target_server}:${TARGET_FD}
 }
 
 gen_dev_release(){
     echoG '- Generate dev release'
-    ssh -oStrictHostKeyChecking=no root@${target_server} -t "/var/www/gen_rpm_release.sh ${EPEL_TAG}"
+    echo "new_rpms: $new_rpms"
+    ssh -oStrictHostKeyChecking=no root@${target_server} -t "/var/www/gen_rpm_release.sh ${EPEL_TAG} ${TARGET_FD} \"$new_rpms\""
 }
