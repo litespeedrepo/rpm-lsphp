@@ -12,7 +12,7 @@ To build a custom package on a local server.
 2. Start container with command, `docker run -d --name packagebuild --user root --cap-add SYS_ADMIN --security-opt seccomp=unconfined --security-opt apparmor=unconfined -it eggcold/centos-build`
 3. Login to the container: `docker exec -it packagebuild bash`
 4. clone the repo or your forked repo, `git clone https://github.com/litespeedrepo/rpm-lsphp.git`
-5. Switch branch, e.g. php83: `git checkout php83`
+5. Switch branch, e.g. php82: `git checkout php82`
 6. Run example command to build, e.g. apcu package for epel-9 distribution: `./build.sh apcu 9 x86_64`
 7. Result rpm will be stored under, e.g. **packaging/build/apcu/5.1.24/result/epel-9-x86_64/** folder
 
