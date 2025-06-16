@@ -6,7 +6,7 @@ prod_server='rpms.litespeedtech.com'
 source ./functions.sh #2>/dev/null
 EPACE='        '
 FPACE='    '
-PHP_V=83
+PHP_V=81
 product=$1
 platforms=$2
 input_archs=$3
