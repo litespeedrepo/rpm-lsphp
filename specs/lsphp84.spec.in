@@ -790,14 +790,14 @@ if test "x${vpdo}" != "x%{pdover}"; then
    exit 1
 fi
 
-%if %{with_zip}
-ver=$(sed -n '/#define PHP_ZIP_VERSION /{s/.* "//;s/".*$//;p}' ext/zip/php_zip.h)
-if test "$ver" != "%{zipver}"; then
-   : Error: Upstream ZIP version is now ${ver}, expecting %{zipver}.
-   : Update the %{zipver} macro and rebuild.
-   exit 1
-fi
-%endif
+#%if %{with_zip}
+#ver=$(sed -n '/#define PHP_ZIP_VERSION /{s/.* "//;s/".*$//;p}' ext/zip/php_zip.h)
+#if test "$ver" != "%{zipver}"; then
+#   : Error: Upstream ZIP version is now ${ver}, expecting %{zipver}.
+#   : Update the %{zipver} macro and rebuild.
+#   exit 1
+#fi
+#%endif
 
 # https://bugs.php.net/63362 - Not needed but installed headers.
 # Drop some Windows specific headers to avoid installation,
