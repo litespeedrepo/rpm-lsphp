@@ -32,9 +32,7 @@ BuildRequires:  %{?dtsprefix}gcc
 BuildRequires:  %{?php_prefix}-devel
 BuildRequires:  pkgconfig(krb5)
 BuildRequires:  pkgconfig(krb5-gssapi)
-BuildRequires:  krb5-devel
-BuildRequires:  openssl-devel
-BuildRequires:  libc-client-devel
+BuildRequires:  aspell-devel
 BuildRequires:  %{?scl_prefix}php-pear
 
 Requires:      %{?php_prefix}(zend-abi) = %{php_zend_api}
