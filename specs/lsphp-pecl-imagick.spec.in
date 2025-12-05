@@ -48,7 +48,7 @@
 #global gh_date     20151204
 
 %global ini_name    40-%{pecl_name}.ini
-%global upstream_version 3.8.0
+%global upstream_version 3.8.1
 #global upstream_prever  RC2
 
 %global sources          %{pecl_name}-%{upstream_version}%{?upstream_prever}
