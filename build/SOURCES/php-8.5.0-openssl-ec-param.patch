@@ -1,0 +1,35 @@
+diff -up ./ext/openssl/openssl_backend_v1.c.ec-param ./ext/openssl/openssl_backend_v1.c
+--- ./ext/openssl/openssl_backend_v1.c.ec-param	2025-06-30 15:57:32.345876147 +0200
++++ ./ext/openssl/openssl_backend_v1.c	2025-06-30 15:59:43.380395611 +0200
+@@ -256,13 +256,8 @@ static bool php_openssl_pkey_init_ec_dat
+ 		OPENSSL_PKEY_SET_BN(data, b);
+ 		OPENSSL_PKEY_SET_BN(data, order);
+ 
++		php_error_docref(NULL, E_WARNING, "Missing params: curve_name (params only is not supported by OpenSSL)");
+ 		if (!(p && a && b && order)) {
+-			if (!p && !a && !b && !order) {
+-				php_error_docref(NULL, E_WARNING, "Missing params: curve_name");
+-			} else {
+-				php_error_docref(
+-					NULL, E_WARNING, "Missing params: curve_name or p, a, b, order");
+-			}
+ 			goto clean_exit;
+ 		}
+ 
+diff -up ./ext/openssl/openssl_backend_v3.c.ec-param ./ext/openssl/openssl_backend_v3.c
+--- ./ext/openssl/openssl_backend_v3.c.ec-param	2025-06-30 15:57:38.753560492 +0200
++++ ./ext/openssl/openssl_backend_v3.c	2025-06-30 16:01:02.221616267 +0200
+@@ -312,12 +312,8 @@ EVP_PKEY *php_openssl_pkey_init_ec(zval
+ 		OPENSSL_PKEY_SET_BN(data, b);
+ 		OPENSSL_PKEY_SET_BN(data, order);
+ 
++		php_error_docref(NULL, E_WARNING, "Missing params: curve_name (params only is not supported by OpenSSL)");
+ 		if (!(p && a && b && order)) {
+-			if (!p && !a && !b && !order) {
+-				php_error_docref(NULL, E_WARNING, "Missing params: curve_name");
+-			} else {
+-				php_error_docref(NULL, E_WARNING, "Missing params: curve_name or p, a, b, order");
+-			}
+ 			goto cleanup;
+ 		}
+ 
