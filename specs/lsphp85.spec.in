@@ -1190,6 +1190,7 @@ cat files.zip >> files.common
 %endif
 
 # The default Zend OPcache blacklist file
+rm files.opcache
 install -m 644 opcache-default.blacklist $RPM_BUILD_ROOT%{_sysconfdir}/php.d/opcache-default.blacklist
 
 # Install the macros file:
@@ -1298,7 +1299,7 @@ rm files.*
 %endif
 
 %files mysqlnd -f files.mysqlnd
-%files opcache -f files.opcache
+
 %config(noreplace) %{_sysconfdir}/php.d/opcache-default.blacklist
 
 %if %{with_zip}
