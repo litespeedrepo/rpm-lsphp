@@ -1,4 +1,4 @@
-# LiteSpeed custom spec for PHP 8.4 IMAP extension
+# LiteSpeed custom spec for PHP 8.5 IMAP extension
 
 %undefine _strict_symbol_defs_build
 
@@ -125,10 +125,10 @@ EOF
 - update to 1.0.3
 
 * Tue Sep 24 2024 Remi Collet <remi@remirepo.net> - 1.0.2-4
-- rebuild for 8.4.0RC1
+- rebuild for 8.5.0RC1
 
 * Thu Jul  4 2024 Remi Collet <remi@remirepo.net> - 1.0.2-3
-- add upstream patch for PHP 8.4
+- add upstream patch for PHP 8.5
 
 * Thu Jan  4 2024 Remi Collet <remi@remirepo.net> - 1.0.2-2
 - add upstream patch to report extension version
@@ -137,4 +137,4 @@ EOF
 - update to 1.0.2
 
 * Tue Dec 19 2023 Remi Collet <remi@remirepo.net> - 1.0.0-1
-- initial package for version 1.0.0 (PHP 8.4)
+- initial package for version 1.0.0 (PHP 8.5)

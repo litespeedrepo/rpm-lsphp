@@ -117,6 +117,8 @@ set_paras()
         PHP_VERSION_DATE='20230831'
     elif [[ "${PHP_VERSION_NUMBER}" == '84' ]]; then
         PHP_VERSION_DATE='20240924'
+    elif [[ "${PHP_VERSION_NUMBER}" == '85' ]]; then
+        PHP_VERSION_DATE='20250925'        
     fi
     PHP_EXTENSION=$(echo "${product}" | sed 's/pecl-//g' | sed 's/^[^-]*-//g')
     if [[ "${PHP_EXTENSION}" =~ 'lsphp' ]]; then

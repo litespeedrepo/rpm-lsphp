@@ -1,4 +1,4 @@
-# LiteSpeed custom spec for PHP 8.4 PSPELL extension
+# LiteSpeed custom spec for PHP 8.5 PSPELL extension
 
 %undefine _strict_symbol_defs_build
 

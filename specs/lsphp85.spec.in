@@ -1,9 +1,9 @@
-# Lite Speed spec file for lsphp 8.4
+# Lite Speed spec file for lsphp 8.5
 
 %global lsapiver %%LSAPIVER%%
 %global phpversion %%VERSION%%
 
-%define _prefix /usr/local/lsws/lsphp84
+%define _prefix /usr/local/lsws/lsphp85
 %define _bindir %{_prefix}/bin
 %define _libdir %{_prefix}/%{_lib}
 %define _sysconfdir %{_prefix}/etc
@@ -23,12 +23,12 @@
 
 
 # API/ABI check
-%global apiver      20240924
-%global zendver     20240924
+%global apiver      20250925
+%global zendver     20250925
 %global pdover      20240423
 # Extension version
 %global fileinfover 1.0.5
-%global zipver      1.22.5
+%global zipver      1.22.7
 
 # Use for first build of PHP (before pecl/zip and pecl/jsonc)
 %global php_bootstrap   0
@@ -37,7 +37,7 @@
 %global _hardened_build 1
 
 # version used for php embedded library soname
-%global embed_version 8.4
+%global embed_version 8.5
 
 %global mysql_sock %(mysql_config --socket 2>/dev/null || echo /var/lib/mysql/mysql.sock)
 
@@ -121,7 +121,7 @@
 
 
 Summary: PHP scripting language for creating dynamic web sites
-Name: lsphp84
+Name: lsphp85
 Version: %{phpversion}
 Release: %%BUILD%%%{?dist}
 # All files licensed under PHP version 3.01, except
@@ -133,7 +133,7 @@ URL: http://www.php.net/
 
 Source0: php-%{version}.tar.gz
 Source1: php.conf
-Source2: php84.ini
+Source2: php85.ini
 Source9: php.modconf
 Source10: php.conf2
 #Source20: http://litespeedtech.com/packages/lsapi/php-litespeed-%{lsapiver}.tgz
@@ -143,26 +143,26 @@ Source51: opcache-default.blacklist
 Source53: 20-ffi.ini
 
 # Build fixes
-Patch1: php-8.4.0-httpd.patch
-Patch5: php-8.4.0-includedir.patch
-Patch6: php-8.4.6-embed.patch
-Patch8: php-8.4.0-libdb.patch
+Patch1: php-8.5.0-httpd.patch
+Patch5: php-8.5.0-includedir.patch
+Patch6: php-8.5.6-embed.patch
+Patch8: php-8.5.0-libdb.patch
 
 # Functional changes
 # Use system nikic/php-parser
 Patch41: php-8.3.3-parser.patch
 # use system tzdata
-Patch42: php-8.4.0-systzdata-v24.patch
+Patch42: php-8.5.0-systzdata-v24.patch
 # See http://bugs.php.net/53436
-# + display PHP version backported from 8.4
-Patch43: php-8.4.0-phpize.patch
+# + display PHP version backported from 8.5
+Patch43: php-8.5.0-phpize.patch
 # Use -lldap_r for OpenLDAP
-Patch45: php-8.4.0-ldap_r.patch
+Patch45: php-8.5.0-ldap_r.patch
 # Ignore unsupported "threads" option on password_hash
 Patch46: php-8.0.7-argon2.patch
 # drop "Configure command" from phpinfo output
 # and only use gcc (instead of full version)
-Patch47: php-8.4.0-phpinfo.patch
+Patch47: php-8.5.0-phpinfo.patch
 # Always warn about missing curve_name
 # Both Fedora and RHEL do not support arbitrary EC parameters
 Patch48: php-8.3.0-openssl-ec-param.patch
@@ -219,12 +219,12 @@ BuildRequires: bison
 #***###***package cli
 #Group: Development/Languages
 #Summary: Command-line interface for PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
-Provides: lsphp84-cgi = %{version}-%{release}, lsphp84-cgi%{?_isa} = %{version}-%{release}
-Provides: lsphp84-pcntl, lsphp84-pcntl%{?_isa}
-Provides: lsphp84-readline, lsphp84-readline%{?_isa}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
+Provides: lsphp85-cgi = %{version}-%{release}, lsphp85-cgi%{?_isa} = %{version}-%{release}
+Provides: lsphp85-pcntl, lsphp85-pcntl%{?_isa}
+Provides: lsphp85-readline, lsphp85-readline%{?_isa}
 #***###***description cli
-#The lsphp84-cli package contains the command-line interface
+#The lsphp85-cli package contains the command-line interface
 #executing PHP scripts, /usr/bin/php, and the CGI interface.
 
 #***###***if 0%{?fedora} < 20 && 0%{?rhel} < 7
@@ -250,10 +250,10 @@ which adds support for the PHP language to system Apache HTTP Server.
 %package dbg
 Group: Development/Languages
 Summary: The interactive PHP debugger
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 
 %description dbg
-The lsphp84-dbg package contains the interactive PHP debugger.
+The lsphp85-dbg package contains the interactive PHP debugger.
 
 
 %package common
@@ -265,44 +265,44 @@ Summary: Common files for PHP
 # main/snprintf.c, main/spprintf.c and main/rfc1867.c are ASL 1.0
 License: PHP and BSD and ASL 1.0
 # ABI/API check - Arch specific
-Provides: lsphp84(api) = %{apiver}%{isasuffix}
-Provides: lsphp84(zend-abi) = %{zendver}%{isasuffix}
-Provides: lsphp84(language) = %{version}
-Provides: lsphp84(language)%{?_isa} = %{version}
+Provides: lsphp85(api) = %{apiver}%{isasuffix}
+Provides: lsphp85(zend-abi) = %{zendver}%{isasuffix}
+Provides: lsphp85(language) = %{version}
+Provides: lsphp85(language)%{?_isa} = %{version}
 # Provides for all builtin/shared modules:
-Provides: lsphp84-bz2, lsphp84-bz2%{?_isa}
-Provides: lsphp84-calendar, lsphp84-calendar%{?_isa}
-Provides: lsphp84-core = %{version}, lsphp84-core%{?_isa} = %{version}
-Provides: lsphp84-ctype, lsphp84-ctype%{?_isa}
-Provides: lsphp84-curl, lsphp84-curl%{?_isa}
-Provides: lsphp84-date, lsphp84-date%{?_isa}
-Provides: lsphp84-ereg, lsphp84-ereg%{?_isa}
-Provides: lsphp84-exif, lsphp84-exif%{?_isa}
-Provides: lsphp84-fileinfo, lsphp84-fileinfo%{?_isa}
-Provides: lsphp84-filter, lsphp84-filter%{?_isa}
-Provides: lsphp84-ftp, lsphp84-ftp%{?_isa}
-Provides: lsphp84-gettext, lsphp84-gettext%{?_isa}
-Provides: lsphp84-hash, lsphp84-hash%{?_isa}
-Provides: lsphp84-mhash = %{version}, lsphp84-mhash%{?_isa} = %{version}
-Provides: lsphp84-iconv, lsphp84-iconv%{?_isa}
-Provides: lsphp84-libxml, lsphp84-libxml%{?_isa}
-Provides: lsphp84-openssl, lsphp84-openssl%{?_isa}
-Provides: lsphp84-phar, lsphp84-phar%{?_isa}
-Provides: lsphp84-pcre, lsphp84-pcre%{?_isa}
-Provides: lsphp84-reflection, lsphp84-reflection%{?_isa}
-Provides: lsphp84-session, lsphp84-session%{?_isa}
-Provides: lsphp84-sockets, lsphp84-sockets%{?_isa}
-Provides: lsphp84-spl, lsphp84-spl%{?_isa}
-Provides: lsphp84-standard = %{version}, lsphp84-standard%{?_isa} = %{version}
-Provides: lsphp84-tokenizer, lsphp84-tokenizer%{?_isa}
-Provides: lsphp84-zip, lsphp84-zip%{?_isa}
-Provides: lsphp84-zlib, lsphp84-zlib%{?_isa}
-Provides: lsphp84-json, lsphp84-json%{?_isa}
-Provides: lsphp84-libsodium, lsphp84-libsodium%{?_isa}
+Provides: lsphp85-bz2, lsphp85-bz2%{?_isa}
+Provides: lsphp85-calendar, lsphp85-calendar%{?_isa}
+Provides: lsphp85-core = %{version}, lsphp85-core%{?_isa} = %{version}
+Provides: lsphp85-ctype, lsphp85-ctype%{?_isa}
+Provides: lsphp85-curl, lsphp85-curl%{?_isa}
+Provides: lsphp85-date, lsphp85-date%{?_isa}
+Provides: lsphp85-ereg, lsphp85-ereg%{?_isa}
+Provides: lsphp85-exif, lsphp85-exif%{?_isa}
+Provides: lsphp85-fileinfo, lsphp85-fileinfo%{?_isa}
+Provides: lsphp85-filter, lsphp85-filter%{?_isa}
+Provides: lsphp85-ftp, lsphp85-ftp%{?_isa}
+Provides: lsphp85-gettext, lsphp85-gettext%{?_isa}
+Provides: lsphp85-hash, lsphp85-hash%{?_isa}
+Provides: lsphp85-mhash = %{version}, lsphp85-mhash%{?_isa} = %{version}
+Provides: lsphp85-iconv, lsphp85-iconv%{?_isa}
+Provides: lsphp85-libxml, lsphp85-libxml%{?_isa}
+Provides: lsphp85-openssl, lsphp85-openssl%{?_isa}
+Provides: lsphp85-phar, lsphp85-phar%{?_isa}
+Provides: lsphp85-pcre, lsphp85-pcre%{?_isa}
+Provides: lsphp85-reflection, lsphp85-reflection%{?_isa}
+Provides: lsphp85-session, lsphp85-session%{?_isa}
+Provides: lsphp85-sockets, lsphp85-sockets%{?_isa}
+Provides: lsphp85-spl, lsphp85-spl%{?_isa}
+Provides: lsphp85-standard = %{version}, lsphp85-standard%{?_isa} = %{version}
+Provides: lsphp85-tokenizer, lsphp85-tokenizer%{?_isa}
+Provides: lsphp85-zip, lsphp85-zip%{?_isa}
+Provides: lsphp85-zlib, lsphp85-zlib%{?_isa}
+Provides: lsphp85-json, lsphp85-json%{?_isa}
+Provides: lsphp85-libsodium, lsphp85-libsodium%{?_isa}
 
 %description common
-The lsphp84-common package contains files used by both the php
-package and the lsphp84-cli package.
+The lsphp85-common package contains files used by both the php
+package and the lsphp85-cli package.
 
 %package devel
 Group: Development/Libraries
@@ -313,37 +313,20 @@ Requires: pcre2-devel%{?_isa}
 %endif
 
 %description devel
-The lsphp84-devel package contains the files needed for building PHP
+The lsphp85-devel package contains the files needed for building PHP
 extensions. If you need to compile your own PHP extensions, you will
 need to install this package.
-
-%package opcache
-Summary:   The Zend OPcache
-Group:     Development/Languages
-License:   PHP
-Requires:  lsphp84-common%{?_isa} = %{version}-%{release}
-Provides:  lsphp84-pecl-zendopcache = %{version}
-Provides:  lsphp84-pecl-zendopcache%{?_isa} = %{version}
-Provides:  lsphp84-pecl(opcache) = %{version}
-Provides:  lsphp84-pecl(opcache)%{?_isa} = %{version}
-
-%description opcache
-The Zend OPcache provides faster PHP execution through opcode caching and
-optimization. It improves PHP performance by storing precompiled script
-bytecode in the shared memory. This eliminates the stages of reading code from
-the disk and compiling it on future access. In addition, it applies a few
-bytecode optimization patterns that make code execution faster.
 
 %package ldap
 Summary: A module for PHP applications that use LDAP
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: cyrus-sasl-devel, openldap-devel, openssl-devel
 
 %description ldap
-The lsphp84-ldap package adds Lightweight Directory Access Protocol (LDAP)
+The lsphp85-ldap package adds Lightweight Directory Access Protocol (LDAP)
 support to PHP. LDAP is a set of protocols for accessing directory
 services over the Internet. PHP is an HTML-embedded scripting
 language.
@@ -353,17 +336,17 @@ Summary: A database access abstraction module for PHP applications
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 # ABI/API check - Arch specific
-Provides: lsphp84-pdo-abi = %{pdover}%{isasuffix}
-Provides: lsphp84(pdo-abi) = %{pdover}%{isasuffix}
+Provides: lsphp85-pdo-abi = %{pdover}%{isasuffix}
+Provides: lsphp85(pdo-abi) = %{pdover}%{isasuffix}
 %if %{with_sqlite3}
-Provides: lsphp84-sqlite3, lsphp84-sqlite3%{?_isa}
+Provides: lsphp85-sqlite3, lsphp85-sqlite3%{?_isa}
 %endif
-Provides: lsphp84-pdo_sqlite, lsphp84-pdo_sqlite%{?_isa}
+Provides: lsphp85-pdo_sqlite, lsphp85-pdo_sqlite%{?_isa}
 
 %description pdo
-The lsphp84-pdo package contains a dynamic shared object that will add
+The lsphp85-pdo package contains a dynamic shared object that will add
 a database access abstraction layer to PHP.  This module provides
 a common interface for accessing MySQL, PostgreSQL or other
 databases.
@@ -374,15 +357,15 @@ Summary: A module for PHP applications that use MySQL databases
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-pdo%{?_isa} = %{version}-%{release}
-Provides: lsphp84_database
-Provides: lsphp84-mysqli = %{version}-%{release}
-Provides: lsphp84-mysqli%{?_isa} = %{version}-%{release}
-Provides: lsphp84-pdo_mysql, lsphp84-pdo_mysql%{?_isa}
-Obsoletes: lsphp84-mysqlnd
+Requires: lsphp85-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp85_database
+Provides: lsphp85-mysqli = %{version}-%{release}
+Provides: lsphp85-mysqli%{?_isa} = %{version}-%{release}
+Provides: lsphp85-pdo_mysql, lsphp85-pdo_mysql%{?_isa}
+Obsoletes: lsphp85-mysqlnd
 
 %description mysqlnd
-The lsphp84-mysqlnd package contains a dynamic shared object that will add
+The lsphp85-mysqlnd package contains a dynamic shared object that will add
 MySQL database support to PHP. MySQL is an object-relational database
 management system. PHP is an HTML-embeddable scripting language. If
 you need MySQL support for PHP applications, you will need to install
@@ -395,13 +378,13 @@ Summary: A PostgreSQL database module for PHP
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-pdo%{?_isa} = %{version}-%{release}
-Provides: lsphp84_database
-Provides: lsphp84-pdo_pgsql, lsphp84-pdo_pgsql%{?_isa}
+Requires: lsphp85-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp85_database
+Provides: lsphp85-pdo_pgsql, lsphp85-pdo_pgsql%{?_isa}
 BuildRequires: krb5-devel, openssl-devel, postgresql-devel
 
 %description pgsql
-The lsphp84-pgsql package add PostgreSQL database support to PHP.
+The lsphp85-pgsql package add PostgreSQL database support to PHP.
 PostgreSQL is an object-relational database management
 system that supports almost all SQL constructs. PHP is an
 HTML-embedded scripting language. If you need back-end support for
@@ -413,15 +396,15 @@ Summary: Modules for PHP script using system process interfaces
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
-Provides: lsphp84-posix, lsphp84-posix%{?_isa}
-Provides: lsphp84-shmop, lsphp84-shmop%{?_isa}
-Provides: lsphp84-sysvsem, lsphp84-sysvsem%{?_isa}
-Provides: lsphp84-sysvshm, lsphp84-sysvshm%{?_isa}
-Provides: lsphp84-sysvmsg, lsphp84-sysvmsg%{?_isa}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
+Provides: lsphp85-posix, lsphp85-posix%{?_isa}
+Provides: lsphp85-shmop, lsphp85-shmop%{?_isa}
+Provides: lsphp85-sysvsem, lsphp85-sysvsem%{?_isa}
+Provides: lsphp85-sysvshm, lsphp85-sysvshm%{?_isa}
+Provides: lsphp85-sysvmsg, lsphp85-sysvmsg%{?_isa}
 
 %description process
-The lsphp84-process package contains dynamic shared objects which add
+The lsphp85-process package contains dynamic shared objects which add
 support to PHP using system interfaces for inter-process
 communication.
 
@@ -431,13 +414,13 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # pdo_odbc is licensed under PHP version 3.0
 License: PHP
-Requires: lsphp84-pdo%{?_isa} = %{version}-%{release}
-Provides: lsphp84_database
-Provides: lsphp84-pdo_odbc, lsphp84-pdo_odbc%{?_isa}
+Requires: lsphp85-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp85_database
+Provides: lsphp85-pdo_odbc, lsphp85-pdo_odbc%{?_isa}
 BuildRequires: unixODBC-devel
 
 %description odbc
-The lsphp84-odbc package contains a dynamic shared object that will add
+The lsphp85-odbc package contains a dynamic shared object that will add
 database support through ODBC to PHP. ODBC is an open specification
 which provides a consistent API for developers to use for accessing
 data sources (which are often, but not always, databases). PHP is an
@@ -450,11 +433,11 @@ Summary: A module for PHP applications that use the SOAP protocol
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: libxml2-devel
 
 %description soap
-The lsphp84-soap package contains a dynamic shared object that will add
+The lsphp85-soap package contains a dynamic shared object that will add
 support to PHP for using the SOAP web services protocol.
 
 %if %{with_interbase}
@@ -464,13 +447,13 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
 BuildRequires:  firebird-devel
-Requires: lsphp84-pdo%{?_isa} = %{version}-%{release}
-Provides: lsphp84_database
-Provides: lsphp84-firebird, lsphp84-firebird%{?_isa}
-Provides: lsphp84-pdo_firebird, lsphp84-pdo_firebird%{?_isa}
+Requires: lsphp85-pdo%{?_isa} = %{version}-%{release}
+Provides: lsphp85_database
+Provides: lsphp85-firebird, lsphp85-firebird%{?_isa}
+Provides: lsphp85-pdo_firebird, lsphp85-pdo_firebird%{?_isa}
 
 %description interbase
-The lsphp84-interbase package contains a dynamic shared object that will add
+The lsphp85-interbase package contains a dynamic shared object that will add
 database support through Interbase/Firebird to PHP.
 
 InterBase is the name of the closed-source variant of this RDBMS that was
@@ -488,11 +471,11 @@ Summary: A module for PHP applications that query SNMP-managed devices
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}, net-snmp
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}, net-snmp
 BuildRequires: net-snmp-devel
 
 %description snmp
-The lsphp84-snmp package contains a dynamic shared object that will add
+The lsphp85-snmp package contains a dynamic shared object that will add
 support for querying SNMP devices to PHP.  PHP is an HTML-embeddable
 scripting language. If you need SNMP support for PHP applications, you
 will need to install this package and the php package.
@@ -502,18 +485,18 @@ Summary: A module for PHP applications which use XML
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
-Provides: lsphp84-dom, lsphp84-dom%{?_isa}
-Provides: lsphp84-domxml, lsphp84-domxml%{?_isa}
-Provides: lsphp84-simplexml, lsphp84-simplexml%{?_isa}
-#Provides: lsphp84-wddx, lsphp84-wddx%{?_isa}
-Provides: lsphp84-xmlreader, lsphp84-xmlreader%{?_isa}
-Provides: lsphp84-xmlwriter, lsphp84-xmlwriter%{?_isa}
-Provides: lsphp84-xsl, lsphp84-xsl%{?_isa}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
+Provides: lsphp85-dom, lsphp85-dom%{?_isa}
+Provides: lsphp85-domxml, lsphp85-domxml%{?_isa}
+Provides: lsphp85-simplexml, lsphp85-simplexml%{?_isa}
+#Provides: lsphp85-wddx, lsphp85-wddx%{?_isa}
+Provides: lsphp85-xmlreader, lsphp85-xmlreader%{?_isa}
+Provides: lsphp85-xmlwriter, lsphp85-xmlwriter%{?_isa}
+Provides: lsphp85-xsl, lsphp85-xsl%{?_isa}
 BuildRequires: libxslt-devel >= 1.0.18-1, libxml2-devel >= 2.4.14-1
 
 %description xml
-The lsphp84-xml package contains dynamic shared objects which add support
+The lsphp85-xml package contains dynamic shared objects which add support
 to PHP for manipulating XML documents using the DOM tree,
 and performing XSL transformations on XML documents.
 
@@ -527,11 +510,11 @@ Group: Development/Languages
 License: PHP and LGPLv2 and BSD and OpenLDAP
 #BuildRequires: pkgconfig(oniguruma) >= 6.8
 BuildRequires: oniguruma-devel
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 Requires: oniguruma
 
 %description mbstring
-The lsphp84-mbstring package contains a dynamic shared object that will add
+The lsphp85-mbstring package contains a dynamic shared object that will add
 support for multi-byte string handling to PHP.
 
 %package gd
@@ -544,7 +527,7 @@ License: PHP
 # bundled libgd is licensed under BSD
 License: PHP and BSD
 %endif
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 # Required to build the bundled GD library
 BuildRequires: libjpeg-devel, libpng-devel, freetype-devel
 BuildRequires: libXpm-devel, libwebp-devel
@@ -553,7 +536,7 @@ BuildRequires: gd-devel
 %endif
 
 %description gd
-The lsphp84-gd package contains a dynamic shared object that will add
+The lsphp85-gd package contains a dynamic shared object that will add
 support for using the gd graphics library to PHP.
 
 %package bcmath
@@ -562,10 +545,10 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01, except
 # libbcmath is licensed under LGPLv2+
 License: PHP and LGPLv2+
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 
 %description bcmath
-The lsphp84-bcmath package contains a dynamic shared object that will add
+The lsphp85-bcmath package contains a dynamic shared object that will add
 support for using the bcmath library to PHP.
 
 %package gmp
@@ -574,7 +557,7 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
 BuildRequires: gmp-devel
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 
 %description gmp
 These functions allow you to work with arbitrary-length integers
@@ -586,10 +569,10 @@ Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
 BuildRequires: %{db_devel}, tokyocabinet-devel
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 
 %description dba
-The lsphp84-dba package contains a dynamic shared object that will add
+The lsphp85-dba package contains a dynamic shared object that will add
 support for using the DBA database abstraction layer to PHP.
 
 %if %{with_tidy}
@@ -598,11 +581,11 @@ Summary: Standard PHP module provides tidy library support
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: libtidy-devel
 
 %description tidy
-The lsphp84-tidy package contains a dynamic shared object that will add
+The lsphp85-tidy package contains a dynamic shared object that will add
 support for using the tidy library to PHP.
 %endif
 
@@ -612,12 +595,12 @@ Summary: MSSQL database module for PHP
 Group: Development/Languages
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-pdo%{?_isa} = %{version}-%{release}
+Requires: lsphp85-pdo%{?_isa} = %{version}-%{release}
 BuildRequires: freetds-devel
-Provides: lsphp84-pdo_dblib, lsphp84-pdo_dblib%{?_isa}
+Provides: lsphp85-pdo_dblib, lsphp85-pdo_dblib%{?_isa}
 
 %description mssql
-The lsphp84-mssql package contains a dynamic shared object that will
+The lsphp85-mssql package contains a dynamic shared object that will
 add MSSQL database support to PHP.  It uses the TDS (Tabular
 DataStream) protocol through the freetds library, hence any
 database server which supports TDS can be accessed.
@@ -629,11 +612,11 @@ Summary: A module for PHP applications for using the recode library
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: recode-devel
 
 %description recode
-The lsphp84-recode package contains a dynamic shared object that will add
+The lsphp85-recode package contains a dynamic shared object that will add
 support for using the recode library to PHP.
 %endif
 
@@ -642,11 +625,11 @@ Summary: Internationalization extension for PHP applications
 Group: System Environment/Libraries
 # All files licensed under PHP version 3.01
 License: PHP
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: libicu-devel >= 4.0
 
 %description intl
-The lsphp84-intl package contains a dynamic shared object that will add
+The lsphp85-intl package contains a dynamic shared object that will add
 support for using the ICU library to PHP.
 
 %if %{with_enchant}
@@ -655,11 +638,11 @@ Summary: Enchant spelling extension for PHP applications
 # All files licensed under PHP version 3.0
 License: PHP
 Group: System Environment/Libraries
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 BuildRequires: enchant-devel >= 1.2.4
 
 %description enchant
-The lsphp84-enchant package contains a dynamic shared object that will add
+The lsphp85-enchant package contains a dynamic shared object that will add
 support for using the enchant library to PHP.
 %endif
 
@@ -669,7 +652,7 @@ Summary: ZIP archive management extension for PHP
 # All files licensed under PHP version 3.0.1
 License: PHP
 Group: System Environment/Libraries
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 %if %{with_libzip}
 # 0.11.1 required, but 1.0.1 is bundled
 #BuildRequires: pkgconfig
@@ -677,7 +660,7 @@ BuildRequires: pkgconfig(libzip) >= 0.11
 %endif
 
 %description zip
-The lsphp84-zip package provides an extension that will add
+The lsphp85-zip package provides an extension that will add
 support for ZIP archive management to PHP.
 %endif
 
@@ -688,7 +671,7 @@ License: PHP
 Group: System Environment/Libraries
 # Ensure libsodium-last is used (upstream 1.0.9)
 BuildRequires:  pkgconfig(libsodium) >= 1.0.13
-Requires: lsphp84-common%{?_isa} = %{version}-%{release}
+Requires: lsphp85-common%{?_isa} = %{version}-%{release}
 
 %description sodium
 The php-sodium package provides a simple,
@@ -922,8 +905,6 @@ build --prefix=%{_prefix} \
       --libdir=%{_libdir}/php \
       --enable-litespeed \
       --enable-pcntl \
-      --enable-opcache \
-      --enable-opcache-file \
       --enable-phpdbg \
       --enable-mbstring=shared \
       --enable-mbregex \
@@ -1012,7 +993,6 @@ popd
 
 without_shared="--disable-gd \
       --disable-dom --disable-dba --without-unixODBC \
-      --disable-opcache \
       --disable-json \
       --without-ffi \
       --disable-xmlreader --disable-xmlwriter \

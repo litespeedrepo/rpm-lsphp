@@ -1,7 +1,7 @@
 From 65e27f2bc02e7e8f1bf64e26e359e42a1331fca1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Michael=20Vo=C5=99=C3=AD=C5=A1ek?= <mvorisek@mvorisek.cz>
 Date: Wed, 25 Sep 2024 10:56:28 +0200
-Subject: [PATCH] Fix removed "php_strtolower" for PHP 8.4
+Subject: [PATCH] Fix removed "php_strtolower" for PHP 8.5
 
 ---
  imagick.c | 6 +++---
