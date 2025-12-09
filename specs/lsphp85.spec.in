@@ -740,8 +740,6 @@ rm ext/sockets/tests/mcast_ipv?_recv.phpt
 # Should be skipped but fails sometime
 rm ext/standard/tests/file/file_get_contents_error001.phpt
 # cause stack exhausion
-rm Zend/tests/bug54268.phpt
-rm Zend/tests/bug68412.phpt
 
 # Safety check for API version change.
 pver=$(sed -n '/#define PHP_VERSION /{s/.* "//;s/".*$//;p}' main/php_version.h)
@@ -870,6 +868,7 @@ ln -sf ../configure
     --without-pear \
     --with-exec-dir=%{_bindir} \
     --without-gdbm \
+    --enable-opcache-file \
     --with-openssl \
 %if %{with_openssl32}
     --with-openssl-argon2 \
@@ -1076,6 +1075,7 @@ install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/php.d
 install -m 755 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp
 install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/session
 install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/wsdlcache
+install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/php/opcache
 
 
 #install -m 755 build-apache/sapi/litespeed/php $RPM_BUILD_ROOT%{_bindir}/lsphp
@@ -1236,12 +1236,15 @@ rm files.*
 #%license phar_LICENSE
 %doc php.ini-*
 %config(noreplace) %{_sysconfdir}/php.ini
+%config(noreplace) %{_sysconfdir}/php.d/10-opcache.ini
+%config(noreplace) %{_sysconfdir}/php.d/opcache-default.blacklist
 %dir %{_sysconfdir}/php.d
 %dir %{_libdir}/php
 %dir %{_libdir}/php/modules
 %dir %{_localstatedir}/lib/lsphp
 %attr(1733,root,root) %dir %{_localstatedir}/lib/lsphp/session
 %attr(0770,root,root) %dir %{_localstatedir}/lib/lsphp/wsdlcache
+%attr(0770,root,root) %dir %{_localstatedir}/lib/php/opcache
 %dir %{_datadir}/php
 
 %files dbg
