@@ -1,5 +1,5 @@
 apcu=5.1.27
-igbinary=3.2.16
+igbinary=3.2.17RC1
 imagick=3.8.1
 imap=1.0.3
 ioncube=15.0.0
