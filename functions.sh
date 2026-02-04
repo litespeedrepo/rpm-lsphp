@@ -308,5 +308,5 @@ upload_to_server(){
 
 gen_dev_release(){
     echoG '- Generate dev release'
-    ssh -oStrictHostKeyChecking=no root@${target_server} -t "/var/www/gen_rpm_release.sh ${EPEL_TAG} ${TARGET_FD} \"$new_rpms\""
+    ssh -oStrictHostKeyChecking=no -T root@${target_server} "/var/www/gen_rpm_release.sh ${EPEL_TAG} ${TARGET_FD} \"$new_rpms\""
 }
