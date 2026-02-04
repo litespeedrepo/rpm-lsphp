@@ -118,11 +118,11 @@ Package built for PHP %(%{__php} -n -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VER
 %setup -q -T -c
 
 %ifarch aarch64
-wget http://s3.amazonaws.com/downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_aarch64_%{version}.tar.gz
+wget http://s3.amazonaws.com/downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_aarch64_%{version}_beta.tar.gz
 tar xvf ioncube_loaders_lin_aarch64_%{version}.tar.gz
 %else
-wget http://s3.amazonaws.com/downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_%{version}.tar.gz
-tar xvf ioncube_loaders_lin_x86-64_%{version}.tar.gz
+wget http://s3.amazonaws.com/downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_%{version}_beta.tar.gz
+tar xvf ioncube_loaders_lin_x86-64_%{version}_beta.tar.gz
 %endif
 
 [ -d linux_x86_64 ] && ln -s linux_x86_64 ioncube
