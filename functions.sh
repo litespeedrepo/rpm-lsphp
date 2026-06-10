@@ -219,7 +219,7 @@ prepare_source()
         ;;         
         lsphp*)
             echoG "${EPACE}- Match lsphp"
-            source_url="http://us2.php.net/distributions/php-$version.tar.gz"
+            source_url="https://www.php.net/distributions/php-$version.tar.gz"
             source="php-$version.tar.gz"
         ;;
         *)
