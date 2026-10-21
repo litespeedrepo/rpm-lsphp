@@ -1075,7 +1075,7 @@ install -m 755 -d $RPM_BUILD_ROOT%{_sysconfdir}/php.d
 install -m 755 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp
 install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/session
 install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/lsphp/wsdlcache
-install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/php/opcache
+#install -m 700 -d $RPM_BUILD_ROOT%{_localstatedir}/lib/php/opcache
 
 
 #install -m 755 build-apache/sapi/litespeed/php $RPM_BUILD_ROOT%{_bindir}/lsphp
@@ -1244,7 +1244,7 @@ rm files.*
 %dir %{_localstatedir}/lib/lsphp
 %attr(1733,root,root) %dir %{_localstatedir}/lib/lsphp/session
 %attr(0770,root,root) %dir %{_localstatedir}/lib/lsphp/wsdlcache
-%attr(0770,root,root) %dir %{_localstatedir}/lib/php/opcache
+#%attr(0770,root,root) %dir %{_localstatedir}/lib/php/opcache
 %dir %{_datadir}/php
 
 %files dbg
