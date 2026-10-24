@@ -818,6 +818,11 @@ cp -f litespeed-%{lsapiver}/*.c litespeed-%{lsapiver}/*.h sapi/litespeed
 %patch -P300 -p1 -b .datetests
 %endif
 
+# CentOS 7 uses OpenSSL 1.0.2, which does not provide this accessor.
+%if 0%{?rhel} == 7
+perl -0pi -e 's|(#[ \t]*include <openssl/dh\.h>\n)|$1\n#if PHP_OPENSSL_API_VERSION < 0x10100\nstatic const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *asn1)\n{\n\treturn M_ASN1_STRING_data(asn1);\n}\n#endif\n| or die "Could not add OpenSSL 1.0.2 compatibility shim to ext/openssl/xp_ssl.c\n";' ext/openssl/xp_ssl.c
+%endif
+
 # WIP patch
 
 cp Zend/LICENSE Zend/ZEND_LICENSE
