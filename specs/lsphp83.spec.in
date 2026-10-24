@@ -213,8 +213,8 @@ BuildRequires: sqlite-devel >= 3.0.0
 %endif
 BuildRequires: zlib-devel, smtpdaemon, libedit-devel
 %if %{with_libpcre}
-#BuildRequires: pcre2-devel
-BuildRequires: pcre2-devel >= 10.30
+BuildRequires: pcre2-devel
+#BuildRequires: pcre2-devel >= 10.30
 %else
 Provides:      bundled(pcre2) = 10.40
 %endif
