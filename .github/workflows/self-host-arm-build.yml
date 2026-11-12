@@ -27,13 +27,12 @@ on:
       distro:
         description: 'distro'
         required: true
-        default: '10'
+        default: '9'
         type: choice
         options:
-          - '"10"'
           - '"9"'
           - '"8"'       
-          - '"10","9","8"'
+          - '"9","8"'
 
 jobs:
   package:
