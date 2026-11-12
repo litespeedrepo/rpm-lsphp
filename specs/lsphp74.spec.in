@@ -152,6 +152,7 @@ Patch5: php-7.2.0-includedir.patch
 Patch6: php-7.4.0-embed.patch
 Patch8: php-7.2.0-libdb.patch
 Patch9: php-7.0.7-curl.patch
+Patch11: php-7.4.33-icu.patch
 
 # Functional changes
 Patch42: php-7.3.3-systzdata-v19.patch
@@ -808,6 +809,7 @@ wget http://192.168.0.93/downloads/lsphp74/gmpconfig.m4 -O ext/gmp/config.m4
 %if 0%{?rhel}
 %patch9 -p1 -b .curltls
 %endif
+%patch11 -p1 -b .icu74
 
 %if 0%{?fedora} >= 29 || 0%{?rhel} >= 6
 %patch42 -p1 -b .systzdata
