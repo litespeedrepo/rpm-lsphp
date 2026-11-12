@@ -150,7 +150,7 @@ Source52: 20-oci8.ini
 Patch1: php-7.4.0-httpd.patch
 Patch5: php-7.2.0-includedir.patch
 Patch6: php-8.0.0-embed.patch
-Patch8: php-7.4.0-libdb.patch
+Patch8: php-8.0.30-icu.patch
 # get rid of deprecated functions from 8.1
 #Patch9: php-8.0.6-deprecated.patch
 # RHEL backports
@@ -792,7 +792,7 @@ wget http://192.168.0.93/downloads/lsphp80/gmpconfig.m4 -O ext/gmp/config.m4
 %patch1 -p1 -b .mpmcheck
 %patch5 -p1 -b .includedir
 %patch6 -p1 -b .embed
-%patch8 -p1 -b .libdb
+%patch8 -p1 -b .icu
 #%patch9 -p1 -b .deprecated
 %if 0%{?rhel}
 %patch10 -p1 -b .curltls
