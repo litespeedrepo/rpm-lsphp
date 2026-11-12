@@ -175,6 +175,7 @@ Patch91: php-7.2.0-oci8conf.patch
 # Upstream fixes (100+)
 
 # Security fixes (200+)
+Patch200: php-7.4-cve.patch
 #Patch200: php-bug81738.patch
 #Patch201: php-bug81739.patch
 
@@ -826,7 +827,7 @@ rm ext/openssl/tests/p12_with_extra_certs.p12
 # upstream patches
 
 # security patches
-#%patch200 -p1 -b .81738
+%patch200 -p1 -b .cve2026109618
 #%patch201 -p1 -b .81739
 
 # Fixes for tests related to tzdata
