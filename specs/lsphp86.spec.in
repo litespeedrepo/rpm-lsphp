@@ -713,7 +713,7 @@ cp -f litespeed-%{lsapiver}/*.c litespeed-%{lsapiver}/*.h sapi/litespeed
 %patch -P300 -p1 -b .datetests
 %endif
 
-cp Zend/LICENSE Zend/ZEND_LICENSE
+cp Zend/asm/LICENSE BOOST_LICENSE
 cp TSRM/LICENSE TSRM_LICENSE
 #%if ! %{with_libgd}
 #cp ext/gd/libgd/README libgd_README
@@ -863,7 +863,7 @@ ln -sf ../configure
     --with-config-file-path=%{_sysconfdir} \
     --with-config-file-scan-dir=%{_sysconfdir}/php.d \
     --disable-debug \
-    --with-pic \
+    --enable-pic \
     --disable-rpath \
     --without-pear \
     --with-exec-dir=%{_bindir} \
