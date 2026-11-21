@@ -19,37 +19,7 @@ diff -up php-7.4.33/ext/pdo_oci/oci_statement.c.gcc14 php-7.4.33/ext/pdo_oci/oci
  	}
  
  	self->offset += amt;
-diff -up php-7.4.33/sapi/litespeed/lsapi_main.c.gcc14 php-7.4.33/sapi/litespeed/lsapi_main.c
---- php-7.4.33/sapi/litespeed/lsapi_main.c.gcc14	2024-02-14 15:09:59.523706463 +0100
-+++ php-7.4.33/sapi/litespeed/lsapi_main.c	2024-02-14 15:10:13.979258854 +0100
-@@ -25,6 +25,7 @@
- #include "zend.h"
- #include "ext/standard/basic_functions.h"
- #include "ext/standard/info.h"
-+#include "ext/standard/head.h"
- #include "lsapilib.h"
- 
- #include <stdio.h>
-
-
-Adapted for 7.4 from:
-
-From aeaab8ee3e52f74c042a861e394437d6554b36be Mon Sep 17 00:00:00 2001
-From: Florian Weimer <fweimer@redhat.com>
-Date: Mon, 9 Sep 2019 21:29:03 +0200
-Subject: [PATCH] Port various autoconf bits to C99 compilers
-
-C99 no longer has implicit function declarations and implicit ints.
-Current GCC versions enable them as an extension, but this will
-change in a future GCC version.
----
- Zend/Zend.m4           |  2 ++
- build/libtool.m4       |  5 +----
- build/php.m4           | 17 ++++++++++-------
- configure.ac           |  2 ++
- ext/standard/config.m4 | 22 ++++++++++++++++++++++
- 5 files changed, 37 insertions(+), 11 deletions(-)
-
+# NOTE (lsphp): sapi/litespeed/lsapi_main.c hunk dropped - #include "ext/standard/head.h" already in LSAPI 8.4 sources
 diff --git a/Zend/Zend.m4 b/Zend/Zend.m4
 index 054e2621a4057..57a12ac36ba60 100644
 --- a/Zend/Zend.m4

@@ -152,6 +152,7 @@ Patch5: php-7.2.0-includedir.patch
 Patch6: php-7.4.0-embed.patch
 Patch8: php-7.2.0-libdb.patch
 Patch10: php-7.4.33-gcc14.patch
+# NOTE: sapi/litespeed hunk stripped from this patch - already in LSAPI 8.4 sources (spec replaces sapi/litespeed before patching)
 Patch11: php-7.4.33-icu.patch
 # Fix strict prototypes from 8.1
 Patch12: php-7.4.33-proto.patch
@@ -217,6 +218,7 @@ Patch233: php-cve-2026-7262.patch
 Patch234: php-cve-2026-6735.patch
 Patch235: php-cve-2026-7568.patch
 Patch236: php-cve-2026-7258.patch
+# NOTE: sapi/litespeed hunks stripped from this patch - already in LSAPI 8.4 sources (spec replaces sapi/litespeed before patching)
 # From 8.2.32
 Patch237: php-cve-2026-14355.patch
 # From 8.2.33
