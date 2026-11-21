@@ -151,8 +151,8 @@ Patch1: php-7.4.0-httpd.patch
 Patch5: php-7.2.0-includedir.patch
 Patch6: php-8.0.0-embed.patch
 Patch8: php-8.1.0-libdb.patch
-# RHEL backports
-Patch10: php-7.0.7-curl.patch
+# Fix for bash 5.3 (Fedora 43)
+Patch13: php-7.4.33-bash53.patch
 
 # Functional changes
 # Use system nikic/php-parser
@@ -169,7 +169,26 @@ Patch46: php-8.0.7-argon2.patch
 # and only use gcc (instead of full version)
 Patch47: php-8.1.0-phpinfo.patch
 
-Patch48: PHP-8.1-CVE-2026-109618-109619.patch
+# Security fixes (200+)
+Patch200: php-cve-2025-14179.patch
+Patch201: php-cve-2026-6722.patch
+Patch202: php-cve-2026-7261.patch
+Patch203: php-cve-2026-7262.patch
+Patch204: php-cve-2026-6735.patch
+Patch205: php-cve-2026-7259.patch
+Patch206: php-cve-2026-7568.patch
+Patch207: php-cve-2026-7258.patch
+# From 8.2.32
+Patch208: php-cve-2026-14355.patch
+# From 8.2.33
+Patch209: php-cve-2026-9672.patch
+Patch210: php-cve-2026-17543.patch
+Patch211: php-cve-2026-7260.patch
+Patch212: php-gh22643.patch
+# One cumulative patch per version
+Patch213: php-from-8.2.34-to-8.1.patch
+Patch214: php-from-8.2.35-to-8.1.patch
+Patch215: php-from-8.2.36-to-8.1.patch
 
 # RC Patch
 Patch91: php-7.2.0-oci8conf.patch
@@ -182,6 +201,8 @@ Patch91: php-7.2.0-oci8conf.patch
 # Factory is droped from system tzdata
 Patch300: php-7.4.0-datetests.patch
 Patch301: php-8.1.27-zlib-tests.patch
+# for pcre2 10.45
+Patch302: php-8.1.32-pcretests.patch
 
 # WIP
 
@@ -781,9 +802,7 @@ cp -f litespeed-%{lsapiver}/*.c litespeed-%{lsapiver}/*.h sapi/litespeed
 %patch -P5 -p1 -b .includedir
 %patch -P6 -p1 -b .embed
 %patch -P8 -p1 -b .libdb
-%if 0%{?rhel} == 7
-%patch -P10 -p1 -b .curltls
-%endif
+%patch -P13 -p1 -b .bash53
 
 %patch -P41 -p1 -b .syslib
 %if %{with tzdata}
@@ -799,12 +818,29 @@ cp -f litespeed-%{lsapiver}/*.c litespeed-%{lsapiver}/*.h sapi/litespeed
 # upstream patches
 
 # security patches
+%patch -P200 -p1 -b .cve14179
+%patch -P201 -p1 -b .cve6722
+%patch -P202 -p1 -b .cve7261
+%patch -P203 -p1 -b .cve7262
+%patch -P204 -p1 -b .cve6735
+%patch -P205 -p1 -b .cve7259
+%patch -P206 -p1 -b .cve7268
+%patch -P207 -p1 -b .cve7258
+%patch -P208 -p1 -b .gh22187
+%patch -P209 -p1 -b .cve9672
+%patch -P210 -p1 -b .cve17543
+%patch -P211 -p1 -b .cve7260
+%patch -P212 -p1 -b .gh22643
+%patch -P213 -p1 -b .8234
+%patch -P214 -p1 -b .8235
+%patch -P215 -p1 -b .8236
 
 # Fixes for tests related to tzdata
 %if %{with tzdata}
 %patch -P300 -p1 -b .datetests
 %endif
 %patch -P301 -p1 -b .zlibng
+%patch -P302 -p1 -b .pcretests
 
 # WIP patch
 
