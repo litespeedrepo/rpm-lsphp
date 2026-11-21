@@ -152,7 +152,7 @@ Patch8: php-8.4.0-libdb.patch
 # Use system nikic/php-parser
 Patch41: php-8.3.3-parser.patch
 # use system tzdata
-Patch42: php-8.4.0-systzdata-v24.patch
+Patch42: php-8.4.22-systzdata-v24.patch
 # See http://bugs.php.net/53436
 # + display PHP version backported from 8.4
 Patch43: php-8.4.0-phpize.patch
