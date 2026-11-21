@@ -90,18 +90,34 @@ set_paras()
     echo "The following platforms are specified: ${platforms}"
 
     if [ -z "${revision}" ]; then
-        echo ${product} | grep '-' >/dev/null
-        if [ $? = 0 ]; then 
-            revision=$(curl -isk https://${prod_server}/centos/${EPEL_TAG}/${archs}/RPMS/ | grep ${product}-${version} | \
-            sed -nE "s/.*${product}-${version}-([0-9]+)\.el.*/\1/p" | \
-            sort -nr | head -n1)
-        fi
-        if [[ ${revision} == ?(-)+([[:digit:]]) ]]; then
-            revision=$((revision+1))
-        else
-            echoY "${revision} is not a number, set value to 1"
+        local repo_url repo_list found
+        local latest=0
+        local fetched=0
+        local esc_version=${version//./\\.}
+        echoG "${EPACE}- No revision given, checking repo for latest ${product}-${version} release"
+        for repo_dir in "centos/${EPEL_TAG}/${archs}/RPMS/" "centos/${EPEL_TAG}/update/${archs}/RPMS/"; do
+            repo_url="https://${prod_server}/${repo_dir}"
+            repo_list=$(curl -skf --max-time 30 "${repo_url}" 2>/dev/null)
+            if [ $? != 0 ] || [ -z "${repo_list}" ]; then
+                echoY "${EPACE}- WARNING: could not fetch ${repo_url}"
+            else
+                fetched=$((fetched+1))
+                found=$(echo "${repo_list}" | sed -nE "s|.*/${product}-${esc_version}-([0-9]+)\\.el.*|\\1|p" | sort -nr | head -n1)
+                if [[ ${found} =~ ^[0-9]+$ ]] && [ "${found}" -gt "${latest}" ]; then
+                    latest=${found}
+                fi
+            fi
+        done
+        if [ "${fetched}" -eq 0 ]; then
+            echoR "${EPACE}- ERROR: repo unreachable, pass --revision N explicitly."
+            exit 1
+        elif [ "${latest}" -eq 0 ]; then
+            echoY "${EPACE}- No prior release of ${product}-${version} found, starting at revision 1"
             revision=1
-        fi      
+        else
+            revision=$((10#${latest}+1))
+            echoG "${EPACE}- Latest published release is ${latest}, building revision ${revision}"
+        fi
     fi
 
     PHP_VERSION_NUMBER=$(echo "${product}" | sed 's/[^0-9]*//g')
