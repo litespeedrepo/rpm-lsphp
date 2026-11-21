@@ -152,8 +152,8 @@ Patch1: php-7.4.0-httpd.patch
 Patch5: php-7.2.0-includedir.patch
 Patch6: php-8.0.0-embed.patch
 Patch8: php-8.1.0-libdb.patch
-# RHEL backports
-Patch10: php-8.2.0-curl.patch
+# Fix for bash 5.3 (Fedora 43)
+Patch13: php-7.4.33-bash53.patch
 
 # Functional changes
 # Use system nikic/php-parser
@@ -180,6 +180,10 @@ Patch91: php-7.2.0-oci8conf.patch
 # Fixes for tests (300+)
 # Factory is droped from system tzdata
 Patch300: php-7.4.0-datetests.patch
+# for pcre2 10.45 (F42)
+Patch301: php-8.2.28-pcretests.patch
+# for zlib-ng
+Patch302: php-8.2.28-zlibtests.patch
 
 # WIP
 
@@ -785,9 +789,7 @@ wget http://192.168.0.93/downloads/lsphp82/gmpconfig.m4 -O ext/gmp/config.m4
 %patch -P5 -p1 -b .includedir
 %patch -P6 -p1 -b .embed
 %patch -P8 -p1 -b .libdb
-%if 0%{?rhel} == 7
-%patch -P10 -p1 -b .curltls
-%endif
+%patch -P13 -p1 -b .bash53
 
 %patch -P41 -p1 -b .syslib
 %if %{with tzdata}
@@ -808,6 +810,8 @@ wget http://192.168.0.93/downloads/lsphp82/gmpconfig.m4 -O ext/gmp/config.m4
 %if %{with tzdata}
 %patch -P300 -p1 -b .datetests
 %endif
+%patch -P301 -p1 -b .pcretests
+%patch -P302 -p1 -b .zlibtests
 
 # CentOS 7 uses OpenSSL 1.0.2, which does not provide this accessor.
 %if 0%{?rhel} == 7

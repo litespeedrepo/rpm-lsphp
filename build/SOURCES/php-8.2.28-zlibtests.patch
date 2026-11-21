@@ -1,0 +1,20 @@
+From ed1d51fa4fda4572982e390e7b0c8c9dc8d9f622 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Wed, 29 Jan 2025 09:46:15 +0100
+Subject: [PATCH] relax test for zlib-ng
+
+---
+ ext/standard/tests/filters/gh13264.phpt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/standard/tests/filters/gh13264.phpt b/ext/standard/tests/filters/gh13264.phpt
+index 6456a082a1e40..e992d0868898d 100644
+--- a/ext/standard/tests/filters/gh13264.phpt
++++ b/ext/standard/tests/filters/gh13264.phpt
+@@ -45,5 +45,5 @@ array(4) {
+   ["line"]=>
+   int(%d)
+ }
+-string(7) "Hello 6"
++string(%d) "Hello%s"
+ 
