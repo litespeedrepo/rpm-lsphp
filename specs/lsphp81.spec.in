@@ -178,6 +178,7 @@ Patch204: php-cve-2026-6735.patch
 Patch205: php-cve-2026-7259.patch
 Patch206: php-cve-2026-7568.patch
 Patch207: php-cve-2026-7258.patch
+# NOTE: sapi/litespeed hunks stripped from this patch - already in LSAPI 8.4 sources (spec replaces sapi/litespeed before patching)
 # From 8.2.32
 Patch208: php-cve-2026-14355.patch
 # From 8.2.33
