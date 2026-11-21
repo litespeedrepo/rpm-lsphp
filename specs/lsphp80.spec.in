@@ -153,6 +153,7 @@ Patch6: php-8.0.0-embed.patch
 Patch7: php-7.4.0-libdb.patch
 # get rid of deprecated functions from 8.1
 Patch9: php-8.0.6-deprecated.patch
+# NOTE: sapi/litespeed hunk stripped from this patch - inet_pton change already in LSAPI 8.4 sources (spec replaces sapi/litespeed before patching)
 Patch11: php-8.0.30-icu.patch
 # Fix strict prototypes from 8.1
 Patch12: php-8.0.30-proto.patch
@@ -221,6 +222,7 @@ Patch228: php-cve-2026-6735.patch
 Patch229: php-cve-2026-7259.patch
 Patch230: php-cve-2026-7568.patch
 Patch231: php-cve-2026-7258.patch
+# NOTE: sapi/litespeed hunks stripped from this patch - already in LSAPI 8.4 sources (spec replaces sapi/litespeed before patching)
 # From 8.2.32
 Patch232: php-cve-2026-14355.patch
 # From 8.2.33

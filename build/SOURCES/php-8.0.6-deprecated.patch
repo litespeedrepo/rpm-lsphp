@@ -311,23 +311,7 @@ index 071f69d3a7f0..c936d42405de 100644
  				struct hostent *hep;
  
  				if(strlen(host) > MAXFQDNLEN) {
-diff --git a/sapi/litespeed/lsapilib.c b/sapi/litespeed/lsapilib.c
-index a72b5dc1b988..305f3326a682 100644
---- a/sapi/litespeed/lsapilib.c
-+++ b/sapi/litespeed/lsapilib.c
-@@ -2673,8 +2673,12 @@ int LSAPI_ParseSockAddr( const char * pBind, struct sockaddr * pAddr )
-             ((struct sockaddr_in *)pAddr)->sin_addr.s_addr = htonl( INADDR_LOOPBACK );
-         else
-         {
-+#ifdef HAVE_INET_PTON
-+            if (!inet_pton(AF_INET, p, &((struct sockaddr_in *)pAddr)->sin_addr))
-+#else
-             ((struct sockaddr_in *)pAddr)->sin_addr.s_addr = inet_addr( p );
-             if ( ((struct sockaddr_in *)pAddr)->sin_addr.s_addr == INADDR_BROADCAST)
-+#endif
-             {
-                 doAddrInfo = 1;
-             }
+# NOTE (lsphp): sapi/litespeed/lsapilib.c hunk dropped - inet_pton change already in LSAPI 8.4 sources
 From 99d67d121acd4c324738509679d23acaf759d065 Mon Sep 17 00:00:00 2001
 From: Remi Collet <remi@remirepo.net>
 Date: Thu, 6 May 2021 16:35:48 +0200
