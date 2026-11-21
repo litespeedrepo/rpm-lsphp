@@ -183,6 +183,8 @@ Patch49: php-8.0.10-phar-sha.patch
 Patch50: php-8.0.21-openssl3.patch
 # use system libxcrypt, from 8.1
 Patch51: php-8.0.13-crypt.patch
+# display TZData for intl
+Patch52: php-8.0.28-intlinfo.patch
 
 # RC Patch
 Patch91: php-7.2.0-oci8conf.patch
