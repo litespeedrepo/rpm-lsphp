@@ -150,11 +150,14 @@ Source52: 20-oci8.ini
 Patch1: php-7.4.0-httpd.patch
 Patch5: php-7.2.0-includedir.patch
 Patch6: php-8.0.0-embed.patch
-Patch8: php-8.0.30-icu.patch
+Patch7: php-7.4.0-libdb.patch
 # get rid of deprecated functions from 8.1
-#Patch9: php-8.0.6-deprecated.patch
-# RHEL backports
-Patch10: php-7.0.7-curl.patch
+Patch9: php-8.0.6-deprecated.patch
+Patch11: php-8.0.30-icu.patch
+# Fix strict prototypes from 8.1
+Patch12: php-8.0.30-proto.patch
+# Fix for bash 5.3 (Fedora 43)
+Patch13: php-7.4.33-bash53.patch
 
 # Functional changes
 # Use system nikic/php-parser
@@ -186,11 +189,55 @@ Patch91: php-7.2.0-oci8conf.patch
 # Upstream fixes (100+)
 
 # Security fixes (200+)
-Patch203: php-8.0-cve.patch
+Patch200: php-cve-2024-2756.patch
+Patch201: php-cve-2024-3096.patch
+Patch202: php-cve-2024-5458.patch
+Patch203: php-cve-2024-8925.patch
+Patch204: php-cve-2024-8926.patch
+Patch205: php-cve-2024-8927.patch
+Patch206: php-cve-2024-9026.patch
+Patch207: php-cve-2024-11236.patch
+Patch208: php-cve-2024-11234.patch
+Patch209: php-cve-2024-8932.patch
+Patch210: php-cve-2024-11233.patch
+Patch211: php-ghsa-4w77-75f9-2c8w.patch
+Patch212: php-cve-2024-8929.patch
+Patch213: php-cve-2025-1217.patch
+Patch214: php-cve-2025-1734.patch
+Patch215: php-cve-2025-1861.patch
+Patch216: php-cve-2025-1736.patch
+Patch217: php-cve-2025-1219.patch
+Patch218: php-cve-2025-6491.patch
+Patch219: php-cve-2025-1220.patch
+Patch220: php-cve-2025-1735.patch
+Patch221: php-cve-2025-14177.patch
+Patch222: php-cve-2025-14178.patch
+Patch223: php-ghsa-www2-q4fc-65wf.patch
+Patch224: php-cve-2025-14179.patch
+Patch225: php-cve-2026-6722.patch
+Patch226: php-cve-2026-7261.patch
+Patch227: php-cve-2026-7262.patch
+Patch228: php-cve-2026-6735.patch
+Patch229: php-cve-2026-7259.patch
+Patch230: php-cve-2026-7568.patch
+Patch231: php-cve-2026-7258.patch
+# From 8.2.32
+Patch232: php-cve-2026-14355.patch
+# From 8.2.33
+Patch233: php-cve-2026-9672.patch
+Patch234: php-cve-2026-17543.patch
+Patch235: php-cve-2026-7260.patch
+Patch236: php-gh22643.patch
+# One cumulative patch per version
+Patch237: php-from-8.2.34-to-8.0.patch
+Patch238: php-from-8.2.35-to-8.0.patch
+Patch239: php-from-8.2.36-to-8.0.patch
 
 # Fixes for tests (300+)
 # Factory is droped from system tzdata
 Patch300: php-7.4.0-datetests.patch
+Patch301: php-8.0.30-zlib-tests.patch
+Patch302: php-8.0.30-pcretests.patch
 
 # WIP
 
@@ -793,16 +840,14 @@ wget http://192.168.0.93/downloads/lsphp80/gmpconfig.m4 -O ext/gmp/config.m4
 %patch1 -p1 -b .mpmcheck
 %patch5 -p1 -b .includedir
 %patch6 -p1 -b .embed
-%patch8 -p1 -b .icu
-#%patch9 -p1 -b .deprecated
-%if 0%{?rhel}
-%patch10 -p1 -b .curltls
-%endif
+%patch7 -p1 -b .libdb
+%patch9 -p1 -b .deprecated
+%patch11 -p1 -b .icu74
+%patch12 -p1 -b .proto
+%patch13 -p1 -b .bash53
 
 %patch41 -p1 -b .syslib
-%if 0%{?fedora} >= 31 || 0%{?rhel} >= 6
 %patch42 -p1 -b .systzdata
-%endif
 %patch43 -p1 -b .headers
 %patch45 -p1 -b .ldap_r
 %patch46 -p1 -b .argon2
@@ -814,18 +859,58 @@ wget http://192.168.0.93/downloads/lsphp80/gmpconfig.m4 -O ext/gmp/config.m4
 rm ext/openssl/tests/p12_with_extra_certs.p12
 %endif
 %patch51 -p1 -b .libxcrypt
+%patch52 -p1 -b .intlinfo
 
 %patch91 -p1 -b .remi-oci8
 
 # upstream patches
 
 # security patches
-%patch203 -p1 -b .cve2026109618
+%patch200 -p1 -b .cve2756
+%patch201 -p1 -b .cve3096
+%patch202 -p1 -b .cve5458
+%patch203 -p1 -b .cve8925
+%patch204 -p1 -b .cve8926
+%patch205 -p1 -b .cve8927
+%patch206 -p1 -b .cve9026
+%patch207 -p1 -b .cve11236
+%patch208 -p1 -b .cve11234
+%patch209 -p1 -b .cve8932
+%patch210 -p1 -b .cve11233
+%patch211 -p1 -b .ghsa4w77
+%patch212 -p1 -b .cve8929
+%patch213 -p1 -b .cve1217
+%patch214 -p1 -b .cve1734
+%patch215 -p1 -b .cve1861
+%patch216 -p1 -b .cve1736
+%patch217 -p1 -b .cve1219
+%patch218 -p1 -b .cve6491
+%patch219 -p1 -b .cve1220
+%patch220 -p1 -b .cve1735
+%patch221 -p1 -b .cve14177
+%patch222 -p1 -b .cve14178
+%patch223 -p1 -b .ghsawwww2
+%patch224 -p1 -b .cve14179
+%patch225 -p1 -b .cve6722
+%patch226 -p1 -b .cve7261
+%patch227 -p1 -b .cve7262
+%patch228 -p1 -b .cve6735
+%patch229 -p1 -b .cve7259
+%patch230 -p1 -b .cve7268
+%patch231 -p1 -b .cve7258
+%patch232 -p1 -b .gh22187
+%patch233 -p1 -b .cve9672
+%patch234 -p1 -b .cve17543
+%patch235 -p1 -b .cve7260
+%patch236 -p1 -b .gh22643
+%patch237 -p1 -b .8234
+%patch238 -p1 -b .8235
+%patch239 -p1 -b .8236
 
 # Fixes for tests related to tzdata
-%if 0%{?fedora} >= 29 || 0%{?rhel} >= 6
 %patch300 -p1 -b .datetests
-%endif
+%patch301 -p1 -b .zlibng
+%patch302 -p1 -b .pcretests
 
 # WIP patch
 
